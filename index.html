@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SparkAI Admin</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #0A1929 0%, #132F4C 100%);
+    min-height: 100vh;
+    color: #fff;
+    overflow-x: hidden;
+}
+.screen { display: none; min-height: 100vh; padding: 20px; }
+.screen.active { display: block; }
+
+/* LOGIN */
+#loginScreen { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px 20px; }
+.login-box {
+    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
+    border: 2px solid #00B0FF;
+    border-radius: 20px;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0, 176, 255, 0.2), 0 0 40px rgba(0, 229, 160, 0.1);
+    text-align: center;
+}
+.login-emoji { font-size: 56px; margin-bottom: 8px; }
+.login-title { color: #FFD700; font-size: 28px; font-weight: bold; margin-bottom: 4px; }
+.login-subtitle { color: #00E5A0; font-size: 12px; margin-bottom: 32px; }
+.pin-input {
+    width: 100%;
+    padding: 16px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(0,176,255,0.3);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 24px;
+    text-align: center;
+    letter-spacing: 12px;
+    outline: none;
+    transition: all 0.2s;
+}
+.pin-input:focus { border-color: #00B0FF; box-shadow: 0 0 20px rgba(0,176,255,0.3); }
+.btn {
+    width: 100%;
+    padding: 16px;
+    background: #00B0FF;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 16px;
+    box-shadow: 0 8px 20px rgba(0,176,255,0.3);
+    transition: transform 0.1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-danger { background: #FF6B6B; box-shadow: 0 8px 20px rgba(255,107,107,0.3); }
+.btn-success { background: #00E676; box-shadow: 0 8px 20px rgba(0,230,118,0.3); }
+.btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+.btn-small { padding: 8px 14px; font-size: 12px; margin-top: 0; }
+
+/* DASHBOARD */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
+    border: 2px solid #00B0FF;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,176,255,0.2);
+}
+.header h1 { font-size: 18px; color: #FFD700; }
+.header-sub { font-size: 11px; color: #00E5A0; }
+.logout-btn {
+    background: rgba(255,107,107,0.2);
+    border: 1px solid #FF6B6B;
+    color: #FF6B6B;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.stat-card {
+    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
+    border: 2px solid #00B0FF;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+.stat-value { font-size: 32px; font-weight: bold; color: #00E5A0; margin-top: 4px; }
+.stat-icon { font-size: 20px; margin-bottom: 4px; }
+
+.revenue-card {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #0A1929;
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 30px rgba(255,215,0,0.3);
+}
+.revenue-label { font-size: 12px; opacity: 0.7; text-transform: uppercase; }
+.revenue-value { font-size: 36px; font-weight: bold; margin-top: 4px; }
+
+.filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    padding-bottom: 4px;
+}
+.filter-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(0,176,255,0.3);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.filter-btn.active { background: #00B0FF; border-color: #00B0FF; }
+
+.license-card {
+    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
+    border: 2px solid #00B0FF;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.license-email { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; word-break: break-all; }
+.license-code { font-size: 11px; color: #00E5A0; font-family: monospace; margin-bottom: 8px; word-break: break-all; }
+.license-info { font-size: 11px; color: #999; margin-bottom: 12px; }
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-right: 6px;
+    text-transform: uppercase;
+}
+.badge-active { background: rgba(0,230,118,0.2); color: #00E676; border: 1px solid #00E676; }
+.badge-pending { background: rgba(255,215,0,0.2); color: #FFD700; border: 1px solid #FFD700; }
+.badge-expired { background: rgba(255,107,107,0.2); color: #FF6B6B; border: 1px solid #FF6B6B; }
+.badge-blocked { background: rgba(255,0,0,0.2); color: #FF3333; border: 1px solid #FF3333; }
+.license-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #00B0FF, #00E5A0);
+    color: #0A1929;
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    border: none;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(0,176,255,0.5);
+    z-index: 100;
+}
+
+/* MODAL */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 200;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
+    border: 2px solid #00B0FF;
+    border-radius: 20px 20px 0 0;
+    padding: 24px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 -20px 60px rgba(0,176,255,0.3);
+}
+.modal-title { font-size: 18px; color: #00B0FF; margin-bottom: 16px; font-weight: bold; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 12px; color: #00B0FF; margin-bottom: 6px; font-weight: bold; }
+.form-input {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(0,176,255,0.3);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+.form-input:focus { border-color: #00B0FF; }
+.generated-code {
+    background: rgba(0,229,160,0.1);
+    border: 1px solid #00E5A0;
+    color: #00E5A0;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: monospace;
+    text-align: center;
+    font-size: 16px;
+    margin-top: 8px;
+    word-break: break-all;
+}
+.empty-state { text-align: center; padding: 40px 20px; color: #888; }
+.empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+
+.loading { text-align: center; padding: 40px; color: #00B0FF; }
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #132F4C;
+    border: 2px solid #00E5A0;
+    color: #00E5A0;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 300;
+    display: none;
+    box-shadow: 0 8px 30px rgba(0,229,160,0.3);
+    max-width: 90%;
+    text-align: center;
+}
+.toast.error { border-color: #FF6B6B; color: #FF6B6B; box-shadow: 0 8px 30px rgba(255,107,107,0.3); }
+.toast.show { display: block; animation: slideDown 0.3s ease; }
+@keyframes slideDown { from { transform: translate(-50%, -100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="screen active">
+    <div class="login-box">
+        <div class="login-emoji">⚡</div>
+        <div class="login-title">SPARK AI ADMIN</div>
+        <div class="login-subtitle">Panel de gestión de licencias</div>
+        <input type="password" class="pin-input" id="pinInput" placeholder="••••" maxlength="4" inputmode="numeric">
+        <button class="btn" onclick="login()">🔓 ENTRAR</button>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardScreen" class="screen">
+    <div class="header">
+        <div>
+            <h1>⚡ SparkAI Admin</h1>
+            <div class="header-sub">Gestión de licencias</div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Salir</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total</div>
+            <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Activas</div>
+            <div class="stat-value" id="statActive">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-label">Expiradas</div>
+            <div class="stat-value" id="statExpired">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🚫</div>
+            <div class="stat-label">Bloqueadas</div>
+            <div class="stat-value" id="statBlocked">0</div>
+        </div>
+    </div>
+
+    <div class="revenue-card">
+        <div class="revenue-label">💰 Ingresos totales</div>
+        <div class="revenue-value" id="revenue">$0</div>
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" onclick="filterLicenses('all', event)">Todas</button>
+        <button class="filter-btn" onclick="filterLicenses('active', event)">Activas</button>
+        <button class="filter-btn" onclick="filterLicenses('pending', event)">Pendientes</button>
+        <button class="filter-btn" onclick="filterLicenses('expired', event)">Expiradas</button>
+        <button class="filter-btn" onclick="filterLicenses('blocked', event)">Bloqueadas</button>
+    </div>
+
+    <div id="licensesList"></div>
+
+    <button class="fab" onclick="openNewLicenseModal()">+</button>
+</div>
+
+<!-- MODAL NUEVA LICENCIA -->
+<div class="modal-overlay" id="newLicenseModal">
+    <div class="modal">
+        <div class="modal-title">➕ Nueva licencia ($100)</div>
+        <div class="form-group">
+            <label class="form-label">📧 Email del cliente</label>
+            <input type="email" class="form-input" id="newEmail" placeholder="cliente@gmail.com">
+        </div>
+        <div class="form-group">
+            <label class="form-label">🔑 Código (auto-generado)</label>
+            <div class="generated-code" id="generatedCode">SPARKAI-XXXX-XXXX-XXXX</div>
+            <button class="btn btn-secondary btn-small" style="margin-top:8px" onclick="regenerateCode()">🔄 Regenerar</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">💵 Método de pago</label>
+            <select class="form-input" id="newPayment">
+                <option value="Zelle">Zelle</option>
+                <option value="Cash App">Cash App</option>
+                <option value="PayPal">PayPal</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">📝 Notas (opcional)</label>
+            <input type="text" class="form-input" id="newNotes" placeholder="Cliente referido por...">
+        </div>
+        <button class="btn btn-success" onclick="createLicense()">💰 CREAR LICENCIA ($100)</button>
+        <button class="btn btn-secondary" onclick="closeModal('newLicenseModal')">Cancelar</button>
+    </div>
+</div>
+
+<!-- MODAL LOGS -->
+<div class="modal-overlay" id="logsModal">
+    <div class="modal">
+        <div class="modal-title">📊 Historial de actividad</div>
+        <div id="logsContent"></div>
+        <button class="btn btn-secondary" onclick="closeModal('logsModal')">Cerrar</button>
+    </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://gqgiiwqillinmunkprdi.supabase.co";
+const SUPABASE_KEY = "sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D";
+const ADMIN_PIN = "4521";
+
+let allLicenses = [];
+let currentFilter = 'all';
+
+// === LOGIN ===
+function login() {
+    const pin = document.getElementById('pinInput').value;
+    if (pin === ADMIN_PIN) {
+        localStorage.setItem('sparkai_admin_logged', 'true');
+        showDashboard();
+    } else {
+        showToast('PIN incorrecto', true);
+        document.getElementById('pinInput').value = '';
+    }
+}
+
+function logout() {
+    if (!confirm('¿Cerrar sesión?')) return;
+    localStorage.removeItem('sparkai_admin_logged');
+    document.getElementById('loginScreen').classList.add('active');
+    document.getElementById('dashboardScreen').classList.remove('active');
+}
+
+function showDashboard() {
+    document.getElementById('loginScreen').classList.remove('active');
+    document.getElementById('dashboardScreen').classList.add('active');
+    regenerateCode();
+    loadLicenses();
+}
+
+document.getElementById('pinInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') login();
+});
+
+// === SUPABASE API ===
+async function apiRequest(endpoint, options = {}) {
+    const url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation',
+            ...options.headers
+        }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+}
+
+// === LICENCIAS ===
+async function loadLicenses() {
+    document.getElementById('licensesList').innerHTML = '<div class="loading">⏳ Cargando licencias...</div>';
+    try {
+        const data = await apiRequest('licenses?select=*&order=created_at.desc');
+        allLicenses = data || [];
+        updateStats();
+        renderLicenses();
+    } catch (e) {
+        showToast('Error: ' + e.message, true);
+        document.getElementById('licensesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div>Error al cargar</div>';
+    }
+}
+
+function updateStats() {
+    const now = Date.now();
+    let active = 0, expired = 0, blocked = 0, pending = 0, revenue = 0;
+    
+    allLicenses.forEach(l => {
+        if (l.status === 'blocked' || l.status === 'revoked') blocked++;
+        else if (l.status === 'pending') pending++;
+        else if (l.status === 'active') {
+            if (l.expires_at && new Date(l.expires_at).getTime() < now) expired++;
+            else active++;
+        } else if (l.status === 'expired') expired++;
+        
+        if (l.paid_amount) revenue += parseFloat(l.paid_amount);
+    });
+    
+    document.getElementById('statTotal').textContent = allLicenses.length;
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statExpired').textContent = expired;
+    document.getElementById('statBlocked').textContent = blocked;
+    document.getElementById('revenue').textContent = '$' + revenue.toFixed(0);
+}
+
+function renderLicenses() {
+    const container = document.getElementById('licensesList');
+    let filtered = allLicenses;
+    const now = Date.now();
+    
+    if (currentFilter !== 'all') {
+        filtered = allLicenses.filter(l => {
+            if (currentFilter === 'active') {
+                return l.status === 'active' && (!l.expires_at || new Date(l.expires_at).getTime() > now);
+            }
+            if (currentFilter === 'expired') {
+                return l.status === 'expired' || (l.status === 'active' && l.expires_at && new Date(l.expires_at).getTime() < now);
+            }
+            if (currentFilter === 'blocked') return l.status === 'blocked' || l.status === 'revoked';
+            if (currentFilter === 'pending') return l.status === 'pending';
+            return true;
+        });
+    }
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>No hay licencias en este filtro</div>';
+        return;
+    }
+    
+    container.innerHTML = filtered.map(l => {
+        const expiresStr = l.expires_at ? new Date(l.expires_at).toLocaleDateString('es-MX') : 'No activada';
+        const isExpired = l.expires_at && new Date(l.expires_at).getTime() < now;
+        const daysLeft = l.expires_at ? Math.ceil((new Date(l.expires_at).getTime() - now) / (1000*60*60*24)) : null;
+        
+        let badge = '';
+        if (l.status === 'blocked' || l.status === 'revoked') badge = '<span class="badge badge-blocked">🚫 Bloqueada</span>';
+        else if (l.status === 'pending') badge = '<span class="badge badge-pending">⏳ Pendiente</span>';
+        else if (isExpired || l.status === 'expired') badge = '<span class="badge badge-expired">⏰ Expirada</span>';
+        else if (l.status === 'active') badge = `<span class="badge badge-active">✅ Activa${daysLeft !== null ? ' • ' + daysLeft + 'd' : ''}</span>`;
+        
+        return `
+            <div class="license-card">
+                <div class="license-email">${l.email}</div>
+                <div class="license-code">${l.code}</div>
+                <div>${badge}</div>
+                <div class="license-info" style="margin-top:8px">
+                    📅 Expira: ${expiresStr}<br>
+                    📱 ${l.device_name || 'Sin dispositivo'}<br>
+                    💵 Pagado: $${l.paid_amount || 0}
+                </div>
+                <div class="license-actions">
+                    <button class="btn btn-success btn-small" onclick="renewLicense('${l.id}', '${l.email}')">🔄 Renovar +$30</button>
+                    ${l.status === 'blocked' ? 
+                        `<button class="btn btn-success btn-small" onclick="unblockLicense('${l.id}')">✅ Desbloquear</button>` :
+                        `<button class="btn btn-danger btn-small" onclick="blockLicense('${l.id}')">🚫 Bloquear</button>`
+                    }
+                    <button class="btn btn-secondary btn-small" onclick="viewLogs('${l.email}')">📊 Logs</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteLicense('${l.id}', '${l.email}')">🗑️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function filterLicenses(filter, event) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderLicenses();
+}
+
+// === ACCIONES ===
+function generateCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const block = () => Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `SPARKAI-${block()}-${block()}-${block()}`;
+}
+
+function regenerateCode() {
+    document.getElementById('generatedCode').textContent = generateCode();
+}
+
+function openNewLicenseModal() {
+    document.getElementById('newEmail').value = '';
+    document.getElementById('newNotes').value = '';
+    regenerateCode();
+    document.getElementById('newLicenseModal').classList.add('active');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+async function createLicense() {
+    const email = document.getElementById('newEmail').value.trim().toLowerCase();
+    const code = document.getElementById('generatedCode').textContent;
+    const payment = document.getElementById('newPayment').value;
+    const notes = document.getElementById('newNotes').value.trim();
+    
+    if (!email || !email.includes('@')) {
+        showToast('Email inválido', true);
+        return;
+    }
+    
+    try {
+        await apiRequest('licenses', {
+            method: 'POST',
+            body: JSON.stringify({
+                email: email,
+                code: code,
+                status: 'pending',
+                notes: notes || 'Instalación inicial - Semana 1',
+                paid_amount: 100,
+                payment_method: payment
+            })
+        });
+        showToast('✅ Licencia creada. Código: ' + code);
+        closeModal('newLicenseModal');
+        loadLicenses();
+        navigator.clipboard?.writeText(`Email: ${email}\nCódigo: ${code}`).catch(() => {});
+    } catch (e) {
+        showToast('Error: ' + e.message, true);
+    }
+}
+
+async function renewLicense(id, email) {
+    if (!confirm(`¿Renovar licencia de ${email}?\n\nEsto suma $30 y resetea la activación.\nEl cliente debe abrir la app y meter el mismo código.`)) return;
+    try {
+        await apiRequest(`licenses?id=eq.${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                status: 'pending',
+                device_id: null,
+                device_name: null,
+                activated_at: null,
+                expires_at: null
+            })
+        });
+        const current = allLicenses.find(l => l.id === id);
+        await apiRequest(`licenses?id=eq.${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                paid_amount: (parseFloat(current.paid_amount) || 0) + 30
+            })
+        });
+        showToast('✅ Licencia renovada (+$30)');
+        loadLicenses();
+    } catch (e) {
+        showToast('Error: ' + e.message, true);
+    }
+}
+
+async function blockLicense(id) {
+    if (!confirm('¿Bloquear esta licencia?\n\nEl cliente perderá acceso en máximo 30 minutos.')) return;
+    try {
+        await apiRequest(`licenses?id=eq.${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'blocked' })
+        });
+        showToast('🚫 Licencia bloqueada');
+        loadLicenses();
+    } catch (e) {
+        showToast('Error: ' + e.message, true);
+    }
+}
+
+async function unblockLicense(id) {
+    try {
+        await apiRequest(`licenses?id=eq.${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'active' })
+        });
+        showToast('✅ Licencia desbloqueada');
+        loadLicenses();
+    } catch (e) {
+        showToast('Error: ' + e.message, true);
+    }
+}
+
+async function deleteLicense(id, email) {
+    if (!confirm(`⚠️ ELIMINAR PERMANENTEMENTE la licencia de ${email}?\n\nEsta acción NO se puede deshacer.`)) return;
+    try {
+        await apiRequest(`licenses?id=eq.${id}`, { method: 'DELETE' });
+        showToast('🗑️ Licencia eliminada');
+        loadLicenses();
+    } catch (e) {
+        showToast('Error: ' + e.message, true);
+    }
+}
+
+async function viewLogs(email) {
+    document.getElementById('logsContent').innerHTML = '<div class="loading">⏳ Cargando logs...</div>';
+    document.getElementById('logsModal').classList.add('active');
+    try {
+        const logs = await apiRequest(`activation_logs?email=eq.${encodeURIComponent(email)}&order=created_at.desc&limit=50`);
+        if (!logs || logs.length === 0) {
+            document.getElementById('logsContent').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>Sin actividad registrada</div>';
+            return;
+        }
+        document.getElementById('logsContent').innerHTML = logs.map(log => {
+            const date = new Date(log.created_at).toLocaleString('es-MX');
+            const icon = log.success ? '✅' : '❌';
+            return `
+                <div style="background:rgba(255,255,255,0.03); border-left:3px solid ${log.success ? '#00E676' : '#FF6B6B'}; padding:10px; margin-bottom:8px; border-radius:6px">
+                    <div style="font-size:13px; color:#fff">${icon} ${log.action}</div>
+                    <div style="font-size:11px; color:#888; margin-top:4px">${date}</div>
+                    <div style="font-size:10px; color:#666; margin-top:4px">${log.device_name || 'N/A'}</div>
+                    ${log.error_message ? `<div style="font-size:11px; color:#FF6B6B; margin-top:4px">${log.error_message}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        document.getElementById('logsContent').innerHTML = '<div class="empty-state">Error: ' + e.message + '</div>';
+    }
+}
+
+function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Auto-login si ya estaba logueado
+if (localStorage.getItem('sparkai_admin_logged') === 'true') {
+    showDashboard();
+}
+</script>
+
+</body>
+</html>
