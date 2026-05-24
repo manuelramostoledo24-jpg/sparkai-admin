@@ -4,677 +4,428 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SparkAI Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #0A1929 0%, #132F4C 100%);
-    min-height: 100vh;
-    color: #fff;
-    overflow-x: hidden;
-}
-.screen { display: none; min-height: 100vh; padding: 20px; }
-.screen.active { display: block; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+body { background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); min-height: 100vh; color: #fff; padding: 20px; }
+.container { max-width: 1200px; margin: 0 auto; }
+.header { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+.header h1 { color: #FFD700; font-size: 28px; margin-bottom: 5px; }
+.header p { color: #00E5A0; font-size: 14px; }
 
 /* LOGIN */
-#loginScreen { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px 20px; }
-.login-box {
-    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
-    border: 2px solid #00B0FF;
-    border-radius: 20px;
-    padding: 40px 30px;
-    width: 100%;
-    max-width: 380px;
-    box-shadow: 0 20px 60px rgba(0, 176, 255, 0.2), 0 0 40px rgba(0, 229, 160, 0.1);
-    text-align: center;
-}
-.login-emoji { font-size: 56px; margin-bottom: 8px; }
-.login-title { color: #FFD700; font-size: 28px; font-weight: bold; margin-bottom: 4px; }
-.login-subtitle { color: #00E5A0; font-size: 12px; margin-bottom: 32px; }
-.pin-input {
-    width: 100%;
-    padding: 16px;
-    background: rgba(255,255,255,0.05);
-    border: 2px solid rgba(0,176,255,0.3);
-    border-radius: 12px;
-    color: #fff;
-    font-size: 24px;
-    text-align: center;
-    letter-spacing: 12px;
-    outline: none;
-    transition: all 0.2s;
-}
-.pin-input:focus { border-color: #00B0FF; box-shadow: 0 0 20px rgba(0,176,255,0.3); }
-.btn {
-    width: 100%;
-    padding: 16px;
-    background: #00B0FF;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 16px;
-    box-shadow: 0 8px 20px rgba(0,176,255,0.3);
-    transition: transform 0.1s;
-}
-.btn:active { transform: scale(0.97); }
-.btn-danger { background: #FF6B6B; box-shadow: 0 8px 20px rgba(255,107,107,0.3); }
-.btn-success { background: #00E676; box-shadow: 0 8px 20px rgba(0,230,118,0.3); }
-.btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
-.btn-small { padding: 8px 14px; font-size: 12px; margin-top: 0; }
+.login-screen { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+.login-box { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 40px; text-align: center; width: 100%; max-width: 400px; border: 1px solid rgba(0,176,255,0.3); }
+.login-box h2 { color: #FFD700; margin-bottom: 10px; font-size: 32px; }
+.login-box p { color: #aaa; margin-bottom: 30px; }
+.pin-input { width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 2px solid rgba(0,176,255,0.3); border-radius: 12px; color: #fff; font-size: 18px; text-align: center; letter-spacing: 4px; margin-bottom: 20px; }
+.pin-input:focus { outline: none; border-color: #00B0FF; }
+.btn-login { width: 100%; padding: 14px; background: #00B0FF; border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
+.btn-login:hover { background: #0099E5; }
 
-/* DASHBOARD */
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    padding: 16px;
-    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
-    border: 2px solid #00B0FF;
-    border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0,176,255,0.2);
-}
-.header h1 { font-size: 18px; color: #FFD700; }
-.header-sub { font-size: 11px; color: #00E5A0; }
-.logout-btn {
-    background: rgba(255,107,107,0.2);
-    border: 1px solid #FF6B6B;
-    color: #FF6B6B;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
-}
+/* STATS */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+.stat-card .value { font-size: 24px; font-weight: bold; color: #FFD700; }
+.stat-card .label { font-size: 11px; color: #aaa; text-transform: uppercase; margin-top: 4px; }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-}
-.stat-card {
-    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
-    border: 2px solid #00B0FF;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-}
-.stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
-.stat-value { font-size: 32px; font-weight: bold; color: #00E5A0; margin-top: 4px; }
-.stat-icon { font-size: 20px; margin-bottom: 4px; }
+/* FILTERS */
+.filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-btn { padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; color: #aaa; cursor: pointer; font-size: 13px; }
+.filter-btn.active { background: #00B0FF; color: #fff; border-color: #00B0FF; }
 
-.revenue-card {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #0A1929;
-    padding: 20px;
-    border-radius: 16px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 30px rgba(255,215,0,0.3);
-}
-.revenue-label { font-size: 12px; opacity: 0.7; text-transform: uppercase; }
-.revenue-value { font-size: 36px; font-weight: bold; margin-top: 4px; }
-
-.filters {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    margin-bottom: 16px;
-    padding-bottom: 4px;
-}
-.filter-btn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(0,176,255,0.3);
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    white-space: nowrap;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-.filter-btn.active { background: #00B0FF; border-color: #00B0FF; }
-
-.license-card {
-    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
-    border: 2px solid #00B0FF;
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-}
-.license-email { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; word-break: break-all; }
-.license-code { font-size: 11px; color: #00E5A0; font-family: monospace; margin-bottom: 8px; word-break: break-all; }
-.license-info { font-size: 11px; color: #999; margin-bottom: 12px; }
-.badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: bold;
-    margin-right: 6px;
-    text-transform: uppercase;
-}
-.badge-active { background: rgba(0,230,118,0.2); color: #00E676; border: 1px solid #00E676; }
-.badge-pending { background: rgba(255,215,0,0.2); color: #FFD700; border: 1px solid #FFD700; }
-.badge-expired { background: rgba(255,107,107,0.2); color: #FF6B6B; border: 1px solid #FF6B6B; }
-.badge-blocked { background: rgba(255,0,0,0.2); color: #FF3333; border: 1px solid #FF3333; }
+/* LICENSE CARDS */
+.licenses { display: grid; gap: 12px; }
+.license-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); }
+.license-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.license-email { color: #fff; font-weight: bold; font-size: 14px; }
+.license-code { color: #00E5A0; font-family: monospace; font-size: 12px; margin-top: 4px; word-break: break-all; }
+.status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+.status-active { background: rgba(0,230,118,0.2); color: #00E676; }
+.status-pending { background: rgba(255,193,7,0.2); color: #FFC107; }
+.status-expired { background: rgba(244,67,54,0.2); color: #F44336; }
+.status-blocked { background: rgba(158,158,158,0.2); color: #9E9E9E; }
+.license-info { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: #aaa; }
+.info-item { display: flex; flex-direction: column; }
+.info-item strong { color: #fff; }
 .license-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { padding: 8px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; flex: 1; min-width: 100px; }
+.btn-green { background: #00C853; color: #fff; }
+.btn-yellow { background: #FFA000; color: #000; }
+.btn-blue { background: #00B0FF; color: #fff; }
+.btn-red { background: #F44336; color: #fff; }
+.btn-gray { background: #555; color: #fff; }
 
-.fab {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #00B0FF, #00E5A0);
-    color: #0A1929;
-    width: 60px;
-    height: 60px;
-    border-radius: 30px;
-    border: none;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 12px 30px rgba(0,176,255,0.5);
-    z-index: 100;
-}
+/* FAB */
+.fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: #00C853; color: #fff; font-size: 32px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0,200,83,0.4); }
 
 /* MODAL */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
-    display: none;
-    justify-content: center;
-    align-items: flex-end;
-    z-index: 200;
-}
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; padding: 20px; }
 .modal-overlay.active { display: flex; }
-.modal {
-    background: linear-gradient(135deg, #132F4C 0%, #0A1929 100%);
-    border: 2px solid #00B0FF;
-    border-radius: 20px 20px 0 0;
-    padding: 24px;
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 -20px 60px rgba(0,176,255,0.3);
-}
-.modal-title { font-size: 18px; color: #00B0FF; margin-bottom: 16px; font-weight: bold; }
+.modal { background: #132f4c; border-radius: 20px; padding: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid rgba(0,176,255,0.3); }
+.modal h2 { color: #FFD700; margin-bottom: 20px; }
 .form-group { margin-bottom: 16px; }
-.form-label { display: block; font-size: 12px; color: #00B0FF; margin-bottom: 6px; font-weight: bold; }
-.form-input {
-    width: 100%;
-    padding: 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(0,176,255,0.3);
-    border-radius: 8px;
-    color: #fff;
-    font-size: 14px;
-    outline: none;
-}
-.form-input:focus { border-color: #00B0FF; }
-.generated-code {
-    background: rgba(0,229,160,0.1);
-    border: 1px solid #00E5A0;
-    color: #00E5A0;
-    padding: 12px;
-    border-radius: 8px;
-    font-family: monospace;
-    text-align: center;
-    font-size: 16px;
-    margin-top: 8px;
-    word-break: break-all;
-}
-.empty-state { text-align: center; padding: 40px 20px; color: #888; }
-.empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+.form-group label { display: block; color: #aaa; font-size: 13px; margin-bottom: 6px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 14px; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: #00B0FF; }
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.empty-state { text-align: center; padding: 60px 20px; color: #666; }
 
-.loading { text-align: center; padding: 40px; color: #00B0FF; }
-.toast {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #132F4C;
-    border: 2px solid #00E5A0;
-    color: #00E5A0;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-size: 14px;
-    z-index: 300;
-    display: none;
-    box-shadow: 0 8px 30px rgba(0,229,160,0.3);
-    max-width: 90%;
-    text-align: center;
-}
-.toast.error { border-color: #FF6B6B; color: #FF6B6B; box-shadow: 0 8px 30px rgba(255,107,107,0.3); }
-.toast.show { display: block; animation: slideDown 0.3s ease; }
-@keyframes slideDown { from { transform: translate(-50%, -100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+/* LOGOUT */
+.logout-btn { position: absolute; top: 20px; right: 20px; padding: 8px 14px; background: rgba(244,67,54,0.2); color: #F44336; border: 1px solid #F44336; border-radius: 8px; cursor: pointer; font-size: 12px; }
 </style>
 </head>
 <body>
 
-<!-- TOAST -->
-<div id="toast" class="toast"></div>
-
 <!-- LOGIN -->
-<div id="loginScreen" class="screen active">
-    <div class="login-box">
-        <div class="login-emoji">⚡</div>
-        <div class="login-title">SPARK AI ADMIN</div>
-        <div class="login-subtitle">Panel de gestión de licencias</div>
-        <input type="password" class="pin-input" id="pinInput" placeholder="••••" maxlength="4" inputmode="numeric">
-        <button class="btn" onclick="login()">🔓 ENTRAR</button>
-    </div>
+<div id="loginScreen" class="login-screen">
+  <div class="login-box">
+    <h2>⚡ SparkAI Admin</h2>
+    <p>Ingresa tu contraseña</p>
+    <input type="password" class="pin-input" id="pinInput" placeholder="••••••••••" maxlength="30" autofocus>
+    <button class="btn-login" onclick="login()">INGRESAR</button>
+    <p id="loginError" style="color: #F44336; margin-top: 15px; display: none;">Contraseña incorrecta</p>
+  </div>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboardScreen" class="screen">
-    <div class="header">
-        <div>
-            <h1>⚡ SparkAI Admin</h1>
-            <div class="header-sub">Gestión de licencias</div>
-        </div>
-        <button class="logout-btn" onclick="logout()">Salir</button>
-    </div>
+<div id="dashboard" class="container" style="display:none; position:relative;">
+  <button class="logout-btn" onclick="logout()">Salir</button>
+  
+  <div class="header">
+    <h1>⚡ SparkAI Admin Panel</h1>
+    <p>Gestión de licencias en tiempo real</p>
+  </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-label">Total</div>
-            <div class="stat-value" id="statTotal">0</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-label">Activas</div>
-            <div class="stat-value" id="statActive">0</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">⏰</div>
-            <div class="stat-label">Expiradas</div>
-            <div class="stat-value" id="statExpired">0</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">🚫</div>
-            <div class="stat-label">Bloqueadas</div>
-            <div class="stat-value" id="statBlocked">0</div>
-        </div>
-    </div>
+  <div class="stats" id="stats"></div>
 
-    <div class="revenue-card">
-        <div class="revenue-label">💰 Ingresos totales</div>
-        <div class="revenue-value" id="revenue">$0</div>
-    </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all')">Todas</button>
+    <button class="filter-btn" onclick="setFilter('active')">Activas</button>
+    <button class="filter-btn" onclick="setFilter('pending')">Pendientes</button>
+    <button class="filter-btn" onclick="setFilter('expired')">Expiradas</button>
+    <button class="filter-btn" onclick="setFilter('blocked')">Bloqueadas</button>
+  </div>
 
-    <div class="filters">
-        <button class="filter-btn active" onclick="filterLicenses('all', event)">Todas</button>
-        <button class="filter-btn" onclick="filterLicenses('active', event)">Activas</button>
-        <button class="filter-btn" onclick="filterLicenses('pending', event)">Pendientes</button>
-        <button class="filter-btn" onclick="filterLicenses('expired', event)">Expiradas</button>
-        <button class="filter-btn" onclick="filterLicenses('blocked', event)">Bloqueadas</button>
-    </div>
-
-    <div id="licensesList"></div>
-
-    <button class="fab" onclick="openNewLicenseModal()">+</button>
+  <div class="licenses" id="licenses"></div>
 </div>
 
-<!-- MODAL NUEVA LICENCIA -->
-<div class="modal-overlay" id="newLicenseModal">
-    <div class="modal">
-        <div class="modal-title">➕ Nueva licencia ($100)</div>
-        <div class="form-group">
-            <label class="form-label">📧 Email del cliente</label>
-            <input type="email" class="form-input" id="newEmail" placeholder="cliente@gmail.com">
-        </div>
-        <div class="form-group">
-            <label class="form-label">🔑 Código (auto-generado)</label>
-            <div class="generated-code" id="generatedCode">SPARKAI-XXXX-XXXX-XXXX</div>
-            <button class="btn btn-secondary btn-small" style="margin-top:8px" onclick="regenerateCode()">🔄 Regenerar</button>
-        </div>
-        <div class="form-group">
-            <label class="form-label">💵 Método de pago</label>
-            <select class="form-input" id="newPayment">
-                <option value="Zelle">Zelle</option>
-                <option value="Cash App">Cash App</option>
-                <option value="PayPal">PayPal</option>
-                <option value="Efectivo">Efectivo</option>
-                <option value="Otro">Otro</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">📝 Notas (opcional)</label>
-            <input type="text" class="form-input" id="newNotes" placeholder="Cliente referido por...">
-        </div>
-        <button class="btn btn-success" onclick="createLicense()">💰 CREAR LICENCIA ($100)</button>
-        <button class="btn btn-secondary" onclick="closeModal('newLicenseModal')">Cancelar</button>
+<!-- FAB Crear Licencia -->
+<button class="fab" id="fabBtn" onclick="openCreateModal()" style="display:none;">+</button>
+
+<!-- MODAL Crear -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal">
+    <h2>➕ Nueva Licencia</h2>
+    <div class="form-group">
+      <label>Email del Cliente</label>
+      <input type="email" id="newEmail" placeholder="cliente@gmail.com">
     </div>
+    <div class="form-group">
+      <label>Método de Pago</label>
+      <select id="newPayment">
+        <option value="Zelle">Zelle</option>
+        <option value="Cash App">Cash App</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Notas (opcional)</label>
+      <textarea id="newNotes" rows="2" placeholder="Cliente recomendado por..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeCreateModal()">Cancelar</button>
+      <button class="btn btn-green" onclick="createLicense()">CREAR ($100)</button>
+    </div>
+  </div>
 </div>
 
-<!-- MODAL LOGS -->
+<!-- MODAL Logs -->
 <div class="modal-overlay" id="logsModal">
-    <div class="modal">
-        <div class="modal-title">📊 Historial de actividad</div>
-        <div id="logsContent"></div>
-        <button class="btn btn-secondary" onclick="closeModal('logsModal')">Cerrar</button>
+  <div class="modal">
+    <h2 id="logsTitle">📋 Logs</h2>
+    <div id="logsContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeLogsModal()">Cerrar</button>
     </div>
+  </div>
 </div>
 
 <script>
-const SUPABASE_URL = "https://gqgiiwqillinmunkprdi.supabase.co";
-const SUPABASE_KEY = "sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D";
-const ADMIN_PIN = "4521";
+const SUPABASE_URL = 'https://gqgiiwqillinmunkprdi.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D';
+const ADMIN_PASSWORD = 'MnL2026Spk!Adm';
 
-let allLicenses = [];
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentFilter = 'all';
+let licensesCache = [];
 
-// === LOGIN ===
+window.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('sparkai_admin_session') === 'authenticated') {
+    showDashboard();
+  }
+  document.getElementById('pinInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') login();
+  });
+});
+
 function login() {
-    const pin = document.getElementById('pinInput').value;
-    if (pin === ADMIN_PIN) {
-        localStorage.setItem('sparkai_admin_logged', 'true');
-        showDashboard();
-    } else {
-        showToast('PIN incorrecto', true);
-        document.getElementById('pinInput').value = '';
-    }
+  const pin = document.getElementById('pinInput').value;
+  if (pin === ADMIN_PASSWORD) {
+    localStorage.setItem('sparkai_admin_session', 'authenticated');
+    showDashboard();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('pinInput').value = '';
+  }
 }
 
 function logout() {
-    if (!confirm('¿Cerrar sesión?')) return;
-    localStorage.removeItem('sparkai_admin_logged');
-    document.getElementById('loginScreen').classList.add('active');
-    document.getElementById('dashboardScreen').classList.remove('active');
+  if (confirm('¿Cerrar sesión?')) {
+    localStorage.removeItem('sparkai_admin_session');
+    location.reload();
+  }
 }
 
 function showDashboard() {
-    document.getElementById('loginScreen').classList.remove('active');
-    document.getElementById('dashboardScreen').classList.add('active');
-    regenerateCode();
-    loadLicenses();
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('fabBtn').style.display = 'flex';
+  loadLicenses();
+  setInterval(loadLicenses, 30000);
 }
 
-document.getElementById('pinInput').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') login();
-});
-
-// === SUPABASE API ===
-async function apiRequest(endpoint, options = {}) {
-    const url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation',
-            ...options.headers
-        }
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
-}
-
-// === LICENCIAS ===
 async function loadLicenses() {
-    document.getElementById('licensesList').innerHTML = '<div class="loading">⏳ Cargando licencias...</div>';
-    try {
-        const data = await apiRequest('licenses?select=*&order=created_at.desc');
-        allLicenses = data || [];
-        updateStats();
-        renderLicenses();
-    } catch (e) {
-        showToast('Error: ' + e.message, true);
-        document.getElementById('licensesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div>Error al cargar</div>';
-    }
+  try {
+    const { data, error } = await supabase
+      .from('licenses')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    licensesCache = data || [];
+    renderStats();
+    renderLicenses();
+  } catch (e) {
+    console.error('Error loading:', e);
+  }
 }
 
-function updateStats() {
-    const now = Date.now();
-    let active = 0, expired = 0, blocked = 0, pending = 0, revenue = 0;
-    
-    allLicenses.forEach(l => {
-        if (l.status === 'blocked' || l.status === 'revoked') blocked++;
-        else if (l.status === 'pending') pending++;
-        else if (l.status === 'active') {
-            if (l.expires_at && new Date(l.expires_at).getTime() < now) expired++;
-            else active++;
-        } else if (l.status === 'expired') expired++;
-        
-        if (l.paid_amount) revenue += parseFloat(l.paid_amount);
-    });
-    
-    document.getElementById('statTotal').textContent = allLicenses.length;
-    document.getElementById('statActive').textContent = active;
-    document.getElementById('statExpired').textContent = expired;
-    document.getElementById('statBlocked').textContent = blocked;
-    document.getElementById('revenue').textContent = '$' + revenue.toFixed(0);
+function renderStats() {
+  const total = licensesCache.length;
+  const active = licensesCache.filter(l => l.status === 'active').length;
+  const expired = licensesCache.filter(l => l.status === 'expired').length;
+  const blocked = licensesCache.filter(l => l.status === 'blocked').length;
+  const revenue = licensesCache.reduce((sum, l) => sum + (parseFloat(l.paid_amount) || 0), 0);
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><div class="value">${total}</div><div class="label">Total</div></div>
+    <div class="stat-card"><div class="value" style="color:#00E676;">${active}</div><div class="label">Activas</div></div>
+    <div class="stat-card"><div class="value" style="color:#F44336;">${expired}</div><div class="label">Expiradas</div></div>
+    <div class="stat-card"><div class="value" style="color:#9E9E9E;">${blocked}</div><div class="label">Bloqueadas</div></div>
+    <div class="stat-card"><div class="value" style="color:#00E5A0;">$${revenue.toFixed(0)}</div><div class="label">Ingresos</div></div>
+  `;
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderLicenses();
 }
 
 function renderLicenses() {
-    const container = document.getElementById('licensesList');
-    let filtered = allLicenses;
-    const now = Date.now();
-    
-    if (currentFilter !== 'all') {
-        filtered = allLicenses.filter(l => {
-            if (currentFilter === 'active') {
-                return l.status === 'active' && (!l.expires_at || new Date(l.expires_at).getTime() > now);
-            }
-            if (currentFilter === 'expired') {
-                return l.status === 'expired' || (l.status === 'active' && l.expires_at && new Date(l.expires_at).getTime() < now);
-            }
-            if (currentFilter === 'blocked') return l.status === 'blocked' || l.status === 'revoked';
-            if (currentFilter === 'pending') return l.status === 'pending';
-            return true;
-        });
-    }
-    
-    if (filtered.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>No hay licencias en este filtro</div>';
-        return;
-    }
-    
-    container.innerHTML = filtered.map(l => {
-        const expiresStr = l.expires_at ? new Date(l.expires_at).toLocaleDateString('es-MX') : 'No activada';
-        const isExpired = l.expires_at && new Date(l.expires_at).getTime() < now;
-        const daysLeft = l.expires_at ? Math.ceil((new Date(l.expires_at).getTime() - now) / (1000*60*60*24)) : null;
-        
-        let badge = '';
-        if (l.status === 'blocked' || l.status === 'revoked') badge = '<span class="badge badge-blocked">🚫 Bloqueada</span>';
-        else if (l.status === 'pending') badge = '<span class="badge badge-pending">⏳ Pendiente</span>';
-        else if (isExpired || l.status === 'expired') badge = '<span class="badge badge-expired">⏰ Expirada</span>';
-        else if (l.status === 'active') badge = `<span class="badge badge-active">✅ Activa${daysLeft !== null ? ' • ' + daysLeft + 'd' : ''}</span>`;
-        
-        return `
-            <div class="license-card">
-                <div class="license-email">${l.email}</div>
-                <div class="license-code">${l.code}</div>
-                <div>${badge}</div>
-                <div class="license-info" style="margin-top:8px">
-                    📅 Expira: ${expiresStr}<br>
-                    📱 ${l.device_name || 'Sin dispositivo'}<br>
-                    💵 Pagado: $${l.paid_amount || 0}
-                </div>
-                <div class="license-actions">
-                    <button class="btn btn-success btn-small" onclick="renewLicense('${l.id}', '${l.email}')">🔄 Renovar +$30</button>
-                    ${l.status === 'blocked' ? 
-                        `<button class="btn btn-success btn-small" onclick="unblockLicense('${l.id}')">✅ Desbloquear</button>` :
-                        `<button class="btn btn-danger btn-small" onclick="blockLicense('${l.id}')">🚫 Bloquear</button>`
-                    }
-                    <button class="btn btn-secondary btn-small" onclick="viewLogs('${l.email}')">📊 Logs</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteLicense('${l.id}', '${l.email}')">🗑️</button>
-                </div>
-            </div>
-        `;
-    }).join('');
+  let filtered = licensesCache;
+  if (currentFilter !== 'all') {
+    filtered = licensesCache.filter(l => l.status === currentFilter);
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('licenses').innerHTML = '<div class="empty-state">No hay licencias para mostrar</div>';
+    return;
+  }
+
+  document.getElementById('licenses').innerHTML = filtered.map(l => {
+    const daysLeft = l.expires_at ? Math.max(0, Math.ceil((new Date(l.expires_at) - new Date()) / (1000*60*60*24))) : '-';
+    const isBlocked = l.status === 'blocked';
+    return `
+      <div class="license-card">
+        <div class="license-header">
+          <div>
+            <div class="license-email">${l.email}</div>
+            <div class="license-code">${l.code}</div>
+          </div>
+          <div class="status-badge status-${l.status}">${l.status}</div>
+        </div>
+        <div class="license-info">
+          <div class="info-item"><span>Días restantes</span><strong>${daysLeft}</strong></div>
+          <div class="info-item"><span>Dispositivo</span><strong>${l.device_name || 'No activado'}</strong></div>
+          <div class="info-item"><span>Pagado</span><strong>$${l.paid_amount || 0}</strong></div>
+        </div>
+        <div class="license-actions">
+          <button class="btn btn-green" onclick="renewLicense('${l.id}')">🔄 Renovar +$30</button>
+          <button class="btn btn-blue" onclick="resetDevice('${l.id}', '${l.email}')">📱 Resetear Device</button>
+          <button class="btn ${isBlocked ? 'btn-yellow' : 'btn-red'}" onclick="toggleBlock('${l.id}', ${isBlocked})">${isBlocked ? '✅ Desbloquear' : '🚫 Bloquear'}</button>
+          <button class="btn btn-gray" onclick="viewLogs('${l.id}', '${l.email}')">📋 Logs</button>
+          <button class="btn btn-red" onclick="deleteLicense('${l.id}', '${l.email}')">🗑️ Eliminar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
-function filterLicenses(filter, event) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-    renderLicenses();
+function openCreateModal() {
+  document.getElementById('createModal').classList.add('active');
 }
 
-// === ACCIONES ===
+function closeCreateModal() {
+  document.getElementById('createModal').classList.remove('active');
+  document.getElementById('newEmail').value = '';
+  document.getElementById('newNotes').value = '';
+}
+
 function generateCode() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const block = () => Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-    return `SPARKAI-${block()}-${block()}-${block()}`;
-}
-
-function regenerateCode() {
-    document.getElementById('generatedCode').textContent = generateCode();
-}
-
-function openNewLicenseModal() {
-    document.getElementById('newEmail').value = '';
-    document.getElementById('newNotes').value = '';
-    regenerateCode();
-    document.getElementById('newLicenseModal').classList.add('active');
-}
-
-function closeModal(id) {
-    document.getElementById(id).classList.remove('active');
+  const chars = '0123456789ABCDEF';
+  let code = 'SPARKAI';
+  for (let i = 0; i < 3; i++) {
+    code += '-';
+    for (let j = 0; j < 4; j++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+  }
+  return code;
 }
 
 async function createLicense() {
-    const email = document.getElementById('newEmail').value.trim().toLowerCase();
-    const code = document.getElementById('generatedCode').textContent;
-    const payment = document.getElementById('newPayment').value;
-    const notes = document.getElementById('newNotes').value.trim();
+  const email = document.getElementById('newEmail').value.trim().toLowerCase();
+  const payment = document.getElementById('newPayment').value;
+  const notes = document.getElementById('newNotes').value.trim();
+
+  if (!email || !email.includes('@')) {
+    alert('Ingresa un email válido');
+    return;
+  }
+
+  const code = generateCode();
+
+  try {
+    const { error } = await supabase.from('licenses').insert({
+      email, code, status: 'pending',
+      paid_amount: 100, payment_method: payment, notes: notes || null
+    });
+    if (error) throw error;
     
-    if (!email || !email.includes('@')) {
-        showToast('Email inválido', true);
-        return;
+    try {
+      await navigator.clipboard.writeText(code);
+      alert(`✅ Licencia creada!\n\nCódigo (copiado al portapapeles):\n${code}\n\nMándaselo al cliente.`);
+    } catch {
+      alert(`✅ Licencia creada!\n\nCódigo:\n${code}\n\nCópialo y mándaselo al cliente.`);
     }
     
-    try {
-        await apiRequest('licenses', {
-            method: 'POST',
-            body: JSON.stringify({
-                email: email,
-                code: code,
-                status: 'pending',
-                notes: notes || 'Instalación inicial - Semana 1',
-                paid_amount: 100,
-                payment_method: payment
-            })
-        });
-        showToast('✅ Licencia creada. Código: ' + code);
-        closeModal('newLicenseModal');
-        loadLicenses();
-        navigator.clipboard?.writeText(`Email: ${email}\nCódigo: ${code}`).catch(() => {});
-    } catch (e) {
-        showToast('Error: ' + e.message, true);
-    }
+    closeCreateModal();
+    loadLicenses();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
 }
 
-async function renewLicense(id, email) {
-    if (!confirm(`¿Renovar licencia de ${email}?\n\nEsto suma $30 y resetea la activación.\nEl cliente debe abrir la app y meter el mismo código.`)) return;
-    try {
-        await apiRequest(`licenses?id=eq.${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                status: 'pending',
-                device_id: null,
-                device_name: null,
-                activated_at: null,
-                expires_at: null
-            })
-        });
-        const current = allLicenses.find(l => l.id === id);
-        await apiRequest(`licenses?id=eq.${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                paid_amount: (parseFloat(current.paid_amount) || 0) + 30
-            })
-        });
-        showToast('✅ Licencia renovada (+$30)');
-        loadLicenses();
-    } catch (e) {
-        showToast('Error: ' + e.message, true);
-    }
+async function renewLicense(id) {
+  if (!confirm('¿Renovar por 7 días más? (suma $30 al total pagado)')) return;
+  
+  const license = licensesCache.find(l => l.id === id);
+  const newExpires = new Date();
+  newExpires.setDate(newExpires.getDate() + 7);
+  const newPaid = (parseFloat(license.paid_amount) || 0) + 30;
+
+  try {
+    const { error } = await supabase.from('licenses').update({
+      device_id: null, device_name: null, activated_at: null, expires_at: null,
+      status: 'pending', paid_amount: newPaid
+    }).eq('id', id);
+    if (error) throw error;
+    alert('✅ Licencia renovada! El cliente puede reactivar con su mismo código.');
+    loadLicenses();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
 }
 
-async function blockLicense(id) {
-    if (!confirm('¿Bloquear esta licencia?\n\nEl cliente perderá acceso en máximo 30 minutos.')) return;
-    try {
-        await apiRequest(`licenses?id=eq.${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ status: 'blocked' })
-        });
-        showToast('🚫 Licencia bloqueada');
-        loadLicenses();
-    } catch (e) {
-        showToast('Error: ' + e.message, true);
-    }
+async function resetDevice(id, email) {
+  if (!confirm(`¿Resetear el dispositivo de ${email}?\n\nEl cliente podrá reactivar con su mismo código en CUALQUIER dispositivo.\n\nNO suma dinero, solo limpia el device_id.`)) return;
+
+  try {
+    const { error } = await supabase.from('licenses').update({
+      device_id: null, device_name: null
+    }).eq('id', id);
+    if (error) throw error;
+    alert('✅ Device reseteado!\n\nEl cliente puede reactivar inmediatamente con su mismo código.');
+    loadLicenses();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
 }
 
-async function unblockLicense(id) {
-    try {
-        await apiRequest(`licenses?id=eq.${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ status: 'active' })
-        });
-        showToast('✅ Licencia desbloqueada');
-        loadLicenses();
-    } catch (e) {
-        showToast('Error: ' + e.message, true);
-    }
+async function toggleBlock(id, isBlocked) {
+  const newStatus = isBlocked ? 'pending' : 'blocked';
+  const msg = isBlocked ? '¿Desbloquear?' : '¿Bloquear? El cliente perderá acceso.';
+  if (!confirm(msg)) return;
+
+  try {
+    const { error } = await supabase.from('licenses').update({ status: newStatus }).eq('id', id);
+    if (error) throw error;
+    loadLicenses();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
 }
 
 async function deleteLicense(id, email) {
-    if (!confirm(`⚠️ ELIMINAR PERMANENTEMENTE la licencia de ${email}?\n\nEsta acción NO se puede deshacer.`)) return;
-    try {
-        await apiRequest(`licenses?id=eq.${id}`, { method: 'DELETE' });
-        showToast('🗑️ Licencia eliminada');
-        loadLicenses();
-    } catch (e) {
-        showToast('Error: ' + e.message, true);
+  if (!confirm(`¿ELIMINAR la licencia de ${email}?\n\nEsta acción NO se puede deshacer.`)) return;
+  if (!confirm('¿Estás seguro? Última oportunidad.')) return;
+
+  try {
+    const { error } = await supabase.from('licenses').delete().eq('id', id);
+    if (error) throw error;
+    loadLicenses();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function viewLogs(id, email) {
+  document.getElementById('logsTitle').textContent = `📋 Logs - ${email}`;
+  document.getElementById('logsContent').innerHTML = '<p style="color:#aaa;">Cargando...</p>';
+  document.getElementById('logsModal').classList.add('active');
+
+  try {
+    const { data, error } = await supabase
+      .from('activation_logs')
+      .select('*')
+      .eq('license_id', id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      document.getElementById('logsContent').innerHTML = '<p style="color:#aaa;">No hay registros</p>';
+      return;
     }
+
+    document.getElementById('logsContent').innerHTML = data.map(log => `
+      <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px;">
+        <div style="color:${log.success ? '#00E676' : '#F44336'}; font-weight:bold;">${log.action.toUpperCase()} - ${log.success ? '✅' : '❌'}</div>
+        <div style="color:#aaa; margin-top:4px;">${new Date(log.created_at).toLocaleString()}</div>
+        ${log.device_name ? `<div style="color:#fff; margin-top:4px;">📱 ${log.device_name}</div>` : ''}
+        ${log.error_message ? `<div style="color:#F44336; margin-top:4px;">⚠️ ${log.error_message}</div>` : ''}
+      </div>
+    `).join('');
+  } catch (e) {
+    document.getElementById('logsContent').innerHTML = `<p style="color:#F44336;">Error: ${e.message}</p>`;
+  }
 }
 
-async function viewLogs(email) {
-    document.getElementById('logsContent').innerHTML = '<div class="loading">⏳ Cargando logs...</div>';
-    document.getElementById('logsModal').classList.add('active');
-    try {
-        const logs = await apiRequest(`activation_logs?email=eq.${encodeURIComponent(email)}&order=created_at.desc&limit=50`);
-        if (!logs || logs.length === 0) {
-            document.getElementById('logsContent').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>Sin actividad registrada</div>';
-            return;
-        }
-        document.getElementById('logsContent').innerHTML = logs.map(log => {
-            const date = new Date(log.created_at).toLocaleString('es-MX');
-            const icon = log.success ? '✅' : '❌';
-            return `
-                <div style="background:rgba(255,255,255,0.03); border-left:3px solid ${log.success ? '#00E676' : '#FF6B6B'}; padding:10px; margin-bottom:8px; border-radius:6px">
-                    <div style="font-size:13px; color:#fff">${icon} ${log.action}</div>
-                    <div style="font-size:11px; color:#888; margin-top:4px">${date}</div>
-                    <div style="font-size:10px; color:#666; margin-top:4px">${log.device_name || 'N/A'}</div>
-                    ${log.error_message ? `<div style="font-size:11px; color:#FF6B6B; margin-top:4px">${log.error_message}</div>` : ''}
-                </div>
-            `;
-        }).join('');
-    } catch (e) {
-        document.getElementById('logsContent').innerHTML = '<div class="empty-state">Error: ' + e.message + '</div>';
-    }
-}
-
-function showToast(msg, isError = false) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show' + (isError ? ' error' : '');
-    setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// Auto-login si ya estaba logueado
-if (localStorage.getItem('sparkai_admin_logged') === 'true') {
-    showDashboard();
+function closeLogsModal() {
+  document.getElementById('logsModal').classList.remove('active');
 }
 </script>
 
