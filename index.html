@@ -12,25 +12,21 @@ body { background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); min-height
 .header { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
 .header h1 { color: #FFD700; font-size: 28px; margin-bottom: 5px; }
 .header p { color: #00E5A0; font-size: 14px; }
-
 .login-screen { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
 .login-box { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 40px; text-align: center; width: 100%; max-width: 400px; border: 1px solid rgba(0,176,255,0.3); }
 .login-box h2 { color: #FFD700; margin-bottom: 10px; font-size: 32px; }
 .login-box p { color: #aaa; margin-bottom: 30px; }
-.pin-input { width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 2px solid rgba(0,176,255,0.3); border-radius: 12px; color: #fff; font-size: 18px; text-align: center; letter-spacing: 4px; margin-bottom: 20px; }
+.pin-input { width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 2px solid rgba(0,176,255,0.3); border-radius: 12px; color: #fff; font-size: 24px; text-align: center; letter-spacing: 8px; margin-bottom: 20px; }
 .pin-input:focus { outline: none; border-color: #00B0FF; }
 .btn-login { width: 100%; padding: 14px; background: #00B0FF; border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
 .btn-login:hover { background: #0099E5; }
-
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .stat-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
 .stat-card .value { font-size: 24px; font-weight: bold; color: #FFD700; }
 .stat-card .label { font-size: 11px; color: #aaa; text-transform: uppercase; margin-top: 4px; }
-
 .filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
 .filter-btn { padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; color: #aaa; cursor: pointer; font-size: 13px; }
 .filter-btn.active { background: #00B0FF; color: #fff; border-color: #00B0FF; }
-
 .licenses { display: grid; gap: 12px; }
 .license-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); }
 .license-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -51,9 +47,7 @@ body { background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); min-height
 .btn-blue { background: #00B0FF; color: #fff; }
 .btn-red { background: #F44336; color: #fff; }
 .btn-gray { background: #555; color: #fff; }
-
 .fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: #00C853; color: #fff; font-size: 32px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0,200,83,0.4); }
-
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; padding: 20px; }
 .modal-overlay.active { display: flex; }
 .modal { background: #132f4c; border-radius: 20px; padding: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid rgba(0,176,255,0.3); }
@@ -64,7 +58,6 @@ body { background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); min-height
 .form-group input:focus, .form-group select:focus { outline: none; border-color: #00B0FF; }
 .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
 .empty-state { text-align: center; padding: 60px 20px; color: #666; }
-
 .logout-btn { position: absolute; top: 20px; right: 20px; padding: 8px 14px; background: rgba(244,67,54,0.2); color: #F44336; border: 1px solid #F44336; border-radius: 8px; cursor: pointer; font-size: 12px; }
 </style>
 </head>
@@ -73,23 +66,20 @@ body { background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); min-height
 <div id="loginScreen" class="login-screen">
   <div class="login-box">
     <h2>⚡ SparkAI Admin</h2>
-    <p>Ingresa tu contraseña</p>
-    <input type="password" class="pin-input" id="pinInput" placeholder="••••••••" maxlength="30" autofocus>
+    <p>Ingresa el PIN</p>
+    <input type="password" class="pin-input" id="pinInput" placeholder="••••" maxlength="4" inputmode="numeric" autofocus>
     <button class="btn-login" onclick="login()">INGRESAR</button>
-    <p id="loginError" style="color: #F44336; margin-top: 15px; display: none;">Contraseña incorrecta</p>
+    <p id="loginError" style="color: #F44336; margin-top: 15px; display: none;">PIN incorrecto</p>
   </div>
 </div>
 
 <div id="dashboard" class="container" style="display:none; position:relative;">
   <button class="logout-btn" onclick="logout()">Salir</button>
-  
   <div class="header">
     <h1>⚡ SparkAI Admin Panel</h1>
     <p>Gestión de licencias en tiempo real</p>
   </div>
-
   <div class="stats" id="stats"></div>
-
   <div class="filters">
     <button class="filter-btn active" onclick="setFilter('all')">Todas</button>
     <button class="filter-btn" onclick="setFilter('active')">Activas</button>
@@ -97,7 +87,6 @@ body { background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); min-height
     <button class="filter-btn" onclick="setFilter('expired')">Expiradas</button>
     <button class="filter-btn" onclick="setFilter('blocked')">Bloqueadas</button>
   </div>
-
   <div class="licenses" id="licenses"></div>
 </div>
 
@@ -143,7 +132,7 @@ body { background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); min-height
 <script>
 const SUPABASE_URL = 'https://gqgiiwqillinmunkprdi.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D';
-const ADMIN_PASSWORD = 'Manuel2026';
+const ADMIN_PIN = '4521';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentFilter = 'all';
@@ -160,7 +149,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function login() {
   const pin = document.getElementById('pinInput').value;
-  if (pin === ADMIN_PASSWORD) {
+  if (pin === ADMIN_PIN) {
     localStorage.setItem('sparkai_admin_session', 'authenticated');
     showDashboard();
   } else {
@@ -205,14 +194,7 @@ function renderStats() {
   const expired = licensesCache.filter(l => l.status === 'expired').length;
   const blocked = licensesCache.filter(l => l.status === 'blocked').length;
   const revenue = licensesCache.reduce((sum, l) => sum + (parseFloat(l.paid_amount) || 0), 0);
-
-  document.getElementById('stats').innerHTML = `
-    <div class="stat-card"><div class="value">${total}</div><div class="label">Total</div></div>
-    <div class="stat-card"><div class="value" style="color:#00E676;">${active}</div><div class="label">Activas</div></div>
-    <div class="stat-card"><div class="value" style="color:#F44336;">${expired}</div><div class="label">Expiradas</div></div>
-    <div class="stat-card"><div class="value" style="color:#9E9E9E;">${blocked}</div><div class="label">Bloqueadas</div></div>
-    <div class="stat-card"><div class="value" style="color:#00E5A0;">$${revenue.toFixed(0)}</div><div class="label">Ingresos</div></div>
-  `;
+  document.getElementById('stats').innerHTML = '<div class="stat-card"><div class="value">' + total + '</div><div class="label">Total</div></div><div class="stat-card"><div class="value" style="color:#00E676;">' + active + '</div><div class="label">Activas</div></div><div class="stat-card"><div class="value" style="color:#F44336;">' + expired + '</div><div class="label">Expiradas</div></div><div class="stat-card"><div class="value" style="color:#9E9E9E;">' + blocked + '</div><div class="label">Bloqueadas</div></div><div class="stat-card"><div class="value" style="color:#00E5A0;">$' + revenue.toFixed(0) + '</div><div class="label">Ingresos</div></div>';
 }
 
 function setFilter(f) {
@@ -227,38 +209,14 @@ function renderLicenses() {
   if (currentFilter !== 'all') {
     filtered = licensesCache.filter(l => l.status === currentFilter);
   }
-
   if (filtered.length === 0) {
     document.getElementById('licenses').innerHTML = '<div class="empty-state">No hay licencias para mostrar</div>';
     return;
   }
-
   document.getElementById('licenses').innerHTML = filtered.map(l => {
     const daysLeft = l.expires_at ? Math.max(0, Math.ceil((new Date(l.expires_at) - new Date()) / (1000*60*60*24))) : '-';
     const isBlocked = l.status === 'blocked';
-    return `
-      <div class="license-card">
-        <div class="license-header">
-          <div>
-            <div class="license-email">${l.email}</div>
-            <div class="license-code">${l.code}</div>
-          </div>
-          <div class="status-badge status-${l.status}">${l.status}</div>
-        </div>
-        <div class="license-info">
-          <div class="info-item"><span>Días restantes</span><strong>${daysLeft}</strong></div>
-          <div class="info-item"><span>Dispositivo</span><strong>${l.device_name || 'No activado'}</strong></div>
-          <div class="info-item"><span>Pagado</span><strong>$${l.paid_amount || 0}</strong></div>
-        </div>
-        <div class="license-actions">
-          <button class="btn btn-green" onclick="renewLicense('${l.id}')">🔄 Renovar +$30</button>
-          <button class="btn btn-blue" onclick="resetDevice('${l.id}', '${l.email}')">📱 Resetear Device</button>
-          <button class="btn ${isBlocked ? 'btn-yellow' : 'btn-red'}" onclick="toggleBlock('${l.id}', ${isBlocked})">${isBlocked ? '✅ Desbloquear' : '🚫 Bloquear'}</button>
-          <button class="btn btn-gray" onclick="viewLogs('${l.id}', '${l.email}')">📋 Logs</button>
-          <button class="btn btn-red" onclick="deleteLicense('${l.id}', '${l.email}')">🗑️ Eliminar</button>
-        </div>
-      </div>
-    `;
+    return '<div class="license-card"><div class="license-header"><div><div class="license-email">' + l.email + '</div><div class="license-code">' + l.code + '</div></div><div class="status-badge status-' + l.status + '">' + l.status + '</div></div><div class="license-info"><div class="info-item"><span>Días restantes</span><strong>' + daysLeft + '</strong></div><div class="info-item"><span>Dispositivo</span><strong>' + (l.device_name || 'No activado') + '</strong></div><div class="info-item"><span>Pagado</span><strong>$' + (l.paid_amount || 0) + '</strong></div></div><div class="license-actions"><button class="btn btn-green" onclick="renewLicense(\'' + l.id + '\')">🔄 Renovar +$30</button><button class="btn btn-blue" onclick="resetDevice(\'' + l.id + '\', \'' + l.email + '\')">📱 Resetear Device</button><button class="btn ' + (isBlocked ? 'btn-yellow' : 'btn-red') + '" onclick="toggleBlock(\'' + l.id + '\', ' + isBlocked + ')">' + (isBlocked ? '✅ Desbloquear' : '🚫 Bloquear') + '</button><button class="btn btn-gray" onclick="viewLogs(\'' + l.id + '\', \'' + l.email + '\')">📋 Logs</button><button class="btn btn-red" onclick="deleteLicense(\'' + l.id + '\', \'' + l.email + '\')">🗑️ Eliminar</button></div></div>';
   }).join('');
 }
 
@@ -288,28 +246,23 @@ async function createLicense() {
   const email = document.getElementById('newEmail').value.trim().toLowerCase();
   const payment = document.getElementById('newPayment').value;
   const notes = document.getElementById('newNotes').value.trim();
-
   if (!email || !email.includes('@')) {
     alert('Ingresa un email válido');
     return;
   }
-
   const code = generateCode();
-
   try {
     const { error } = await supabase.from('licenses').insert({
       email, code, status: 'pending',
       paid_amount: 100, payment_method: payment, notes: notes || null
     });
     if (error) throw error;
-    
     try {
       await navigator.clipboard.writeText(code);
-      alert(`✅ Licencia creada!\n\nCódigo (copiado al portapapeles):\n${code}\n\nMándaselo al cliente.`);
+      alert('✅ Licencia creada!\n\nCódigo (copiado al portapapeles):\n' + code + '\n\nMándaselo al cliente.');
     } catch {
-      alert(`✅ Licencia creada!\n\nCódigo:\n${code}\n\nCópialo y mándaselo al cliente.`);
+      alert('✅ Licencia creada!\n\nCódigo:\n' + code + '\n\nCópialo y mándaselo al cliente.');
     }
-    
     closeCreateModal();
     loadLicenses();
   } catch (e) {
@@ -319,10 +272,8 @@ async function createLicense() {
 
 async function renewLicense(id) {
   if (!confirm('¿Renovar por 7 días más? (suma $30 al total pagado)')) return;
-  
   const license = licensesCache.find(l => l.id === id);
   const newPaid = (parseFloat(license.paid_amount) || 0) + 30;
-
   try {
     const { error } = await supabase.from('licenses').update({
       device_id: null, device_name: null, activated_at: null, expires_at: null,
@@ -337,8 +288,7 @@ async function renewLicense(id) {
 }
 
 async function resetDevice(id, email) {
-  if (!confirm(`¿Resetear el dispositivo de ${email}?\n\nEl cliente podrá reactivar con su mismo código en CUALQUIER dispositivo.\n\nNO suma dinero, solo limpia el device_id.`)) return;
-
+  if (!confirm('¿Resetear el dispositivo de ' + email + '?\n\nEl cliente podrá reactivar con su mismo código en CUALQUIER dispositivo.\n\nNO suma dinero, solo limpia el device_id.')) return;
   try {
     const { error } = await supabase.from('licenses').update({
       device_id: null, device_name: null
@@ -355,7 +305,6 @@ async function toggleBlock(id, isBlocked) {
   const newStatus = isBlocked ? 'pending' : 'blocked';
   const msg = isBlocked ? '¿Desbloquear?' : '¿Bloquear? El cliente perderá acceso.';
   if (!confirm(msg)) return;
-
   try {
     const { error } = await supabase.from('licenses').update({ status: newStatus }).eq('id', id);
     if (error) throw error;
@@ -366,9 +315,8 @@ async function toggleBlock(id, isBlocked) {
 }
 
 async function deleteLicense(id, email) {
-  if (!confirm(`¿ELIMINAR la licencia de ${email}?\n\nEsta acción NO se puede deshacer.`)) return;
+  if (!confirm('¿ELIMINAR la licencia de ' + email + '?\n\nEsta acción NO se puede deshacer.')) return;
   if (!confirm('¿Estás seguro? Última oportunidad.')) return;
-
   try {
     const { error } = await supabase.from('licenses').delete().eq('id', id);
     if (error) throw error;
@@ -379,10 +327,9 @@ async function deleteLicense(id, email) {
 }
 
 async function viewLogs(id, email) {
-  document.getElementById('logsTitle').textContent = `📋 Logs - ${email}`;
+  document.getElementById('logsTitle').textContent = '📋 Logs - ' + email;
   document.getElementById('logsContent').innerHTML = '<p style="color:#aaa;">Cargando...</p>';
   document.getElementById('logsModal').classList.add('active');
-
   try {
     const { data, error } = await supabase
       .from('activation_logs')
@@ -391,22 +338,13 @@ async function viewLogs(id, email) {
       .order('created_at', { ascending: false })
       .limit(20);
     if (error) throw error;
-
     if (!data || data.length === 0) {
       document.getElementById('logsContent').innerHTML = '<p style="color:#aaa;">No hay registros</p>';
       return;
     }
-
-    document.getElementById('logsContent').innerHTML = data.map(log => `
-      <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px;">
-        <div style="color:${log.success ? '#00E676' : '#F44336'}; font-weight:bold;">${log.action.toUpperCase()} - ${log.success ? '✅' : '❌'}</div>
-        <div style="color:#aaa; margin-top:4px;">${new Date(log.created_at).toLocaleString()}</div>
-        ${log.device_name ? `<div style="color:#fff; margin-top:4px;">📱 ${log.device_name}</div>` : ''}
-        ${log.error_message ? `<div style="color:#F44336; margin-top:4px;">⚠️ ${log.error_message}</div>` : ''}
-      </div>
-    `).join('');
+    document.getElementById('logsContent').innerHTML = data.map(log => '<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px;"><div style="color:' + (log.success ? '#00E676' : '#F44336') + '; font-weight:bold;">' + log.action.toUpperCase() + ' - ' + (log.success ? '✅' : '❌') + '</div><div style="color:#aaa; margin-top:4px;">' + new Date(log.created_at).toLocaleString() + '</div>' + (log.device_name ? '<div style="color:#fff; margin-top:4px;">📱 ' + log.device_name + '</div>' : '') + (log.error_message ? '<div style="color:#F44336; margin-top:4px;">⚠️ ' + log.error_message + '</div>' : '') + '</div>').join('');
   } catch (e) {
-    document.getElementById('logsContent').innerHTML = `<p style="color:#F44336;">Error: ${e.message}</p>`;
+    document.getElementById('logsContent').innerHTML = '<p style="color:#F44336;">Error: ' + e.message + '</p>';
   }
 }
 
