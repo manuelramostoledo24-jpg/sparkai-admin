@@ -1,356 +1,645 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en" translate="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="google" content="notranslate">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>SparkAI Admin</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-body { background: linear-gradient(135deg, #0a1929 0%, #132f4c 100%); min-height: 100vh; color: #fff; padding: 20px; }
-.container { max-width: 1200px; margin: 0 auto; }
-.header { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
-.header h1 { color: #FFD700; font-size: 28px; margin-bottom: 5px; }
-.header p { color: #00E5A0; font-size: 14px; }
-.login-screen { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
-.login-box { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 40px; text-align: center; width: 100%; max-width: 400px; border: 1px solid rgba(0,176,255,0.3); }
-.login-box h2 { color: #FFD700; margin-bottom: 10px; font-size: 32px; }
-.login-box p { color: #aaa; margin-bottom: 30px; }
-.pin-input { width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 2px solid rgba(0,176,255,0.3); border-radius: 12px; color: #fff; font-size: 24px; text-align: center; letter-spacing: 8px; margin-bottom: 20px; }
-.pin-input:focus { outline: none; border-color: #00B0FF; }
-.btn-login { width: 100%; padding: 14px; background: #00B0FF; border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
-.btn-login:hover { background: #0099E5; }
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.stat-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-.stat-card .value { font-size: 24px; font-weight: bold; color: #FFD700; }
-.stat-card .label { font-size: 11px; color: #aaa; text-transform: uppercase; margin-top: 4px; }
-.filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-.filter-btn { padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; color: #aaa; cursor: pointer; font-size: 13px; }
-.filter-btn.active { background: #00B0FF; color: #fff; border-color: #00B0FF; }
-.licenses { display: grid; gap: 12px; }
-.license-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); }
-.license-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.license-email { color: #fff; font-weight: bold; font-size: 14px; }
-.license-code { color: #00E5A0; font-family: monospace; font-size: 12px; margin-top: 4px; word-break: break-all; }
-.status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-.status-active { background: rgba(0,230,118,0.2); color: #00E676; }
-.status-pending { background: rgba(255,193,7,0.2); color: #FFC107; }
-.status-expired { background: rgba(244,67,54,0.2); color: #F44336; }
-.status-blocked { background: rgba(158,158,158,0.2); color: #9E9E9E; }
-.license-info { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: #aaa; }
-.info-item { display: flex; flex-direction: column; }
-.info-item strong { color: #fff; }
-.license-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn { padding: 8px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; flex: 1; min-width: 100px; }
-.btn-green { background: #00C853; color: #fff; }
-.btn-yellow { background: #FFA000; color: #000; }
-.btn-blue { background: #00B0FF; color: #fff; }
-.btn-red { background: #F44336; color: #fff; }
-.btn-gray { background: #555; color: #fff; }
-.fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: #00C853; color: #fff; font-size: 32px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0,200,83,0.4); }
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; padding: 20px; }
-.modal-overlay.active { display: flex; }
-.modal { background: #132f4c; border-radius: 20px; padding: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid rgba(0,176,255,0.3); }
-.modal h2 { color: #FFD700; margin-bottom: 20px; }
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; color: #aaa; font-size: 13px; margin-bottom: 6px; }
-.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 14px; }
-.form-group input:focus, .form-group select:focus { outline: none; border-color: #00B0FF; }
-.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
-.empty-state { text-align: center; padding: 60px 20px; color: #666; }
-.logout-btn { position: absolute; top: 20px; right: 20px; padding: 8px 14px; background: rgba(244,67,54,0.2); color: #F44336; border: 1px solid #F44336; border-radius: 8px; cursor: pointer; font-size: 12px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0a0e1a;
+    color: #e8eaed;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+  /* PIN gate */
+  #pinGate {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+  #pinGate.hidden { display: none; }
+  .logo {
+    font-size: 32px; font-weight: 800;
+    background: linear-gradient(135deg, #4ade80, #22d3ee);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .tagline { color: #94a3b8; margin-bottom: 40px; font-size: 14px; }
+  #pinInput {
+    width: 200px; padding: 18px;
+    font-size: 28px; text-align: center; letter-spacing: 12px;
+    background: #1e293b; border: 2px solid #334155; border-radius: 12px;
+    color: #fff; margin-bottom: 16px;
+    outline: none;
+  }
+  #pinInput:focus { border-color: #22d3ee; }
+  #pinBtn {
+    width: 200px; padding: 14px;
+    background: linear-gradient(135deg, #4ade80, #22d3ee);
+    border: none; border-radius: 12px;
+    color: #0a0e1a; font-weight: 700; font-size: 16px;
+    cursor: pointer;
+  }
+  #pinError {
+    color: #ef4444; margin-top: 12px; font-size: 14px; min-height: 20px;
+  }
+  /* App */
+  #app { padding: 16px; max-width: 900px; margin: 0 auto; }
+  #app.hidden { display: none; }
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 22px;
+    background: linear-gradient(135deg, #4ade80, #22d3ee);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .logout-btn {
+    background: #1e293b; border: 1px solid #334155;
+    color: #94a3b8; padding: 8px 14px; border-radius: 8px;
+    font-size: 12px; cursor: pointer;
+  }
+  /* Stats */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: #1e293b; border-radius: 10px;
+    padding: 12px 8px; text-align: center;
+  }
+  .stat-num { font-size: 22px; font-weight: 800; }
+  .stat-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .stat.total .stat-num { color: #e8eaed; }
+  .stat.active .stat-num { color: #4ade80; }
+  .stat.expired .stat-num { color: #f59e0b; }
+  .stat.blocked .stat-num { color: #ef4444; }
+  /* Licenses */
+  #licensesList { display: flex; flex-direction: column; gap: 12px; }
+  .license-card {
+    background: #1e293b; border-radius: 12px; padding: 16px;
+    border-left: 4px solid #334155;
+  }
+  .license-card.active { border-left-color: #4ade80; }
+  .license-card.expired { border-left-color: #f59e0b; }
+  .license-card.blocked { border-left-color: #ef4444; }
+  .lic-email { font-size: 14px; color: #e8eaed; margin-bottom: 4px; word-break: break-all; }
+  .lic-code {
+    font-family: "Courier New", monospace; font-size: 12px;
+    color: #94a3b8; margin-bottom: 8px;
+  }
+  .lic-meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    font-size: 11px; color: #94a3b8; margin-bottom: 10px;
+  }
+  .lic-meta span { background: #0f172a; padding: 4px 8px; border-radius: 6px; }
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+  }
+  .badge.active { background: #064e3b; color: #4ade80; }
+  .badge.expired { background: #78350f; color: #fbbf24; }
+  .badge.blocked { background: #7f1d1d; color: #fca5a5; }
+  .lic-actions {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+    margin-top: 10px;
+  }
+  .act-btn {
+    padding: 8px; font-size: 12px; font-weight: 600;
+    border: none; border-radius: 8px; cursor: pointer;
+    background: #334155; color: #e8eaed;
+  }
+  .act-btn.renew { background: #064e3b; color: #4ade80; }
+  .act-btn.block { background: #7f1d1d; color: #fca5a5; }
+  .act-btn.unblock { background: #1e3a8a; color: #93c5fd; }
+  .act-btn.reset { background: #422006; color: #fbbf24; }
+  .act-btn.delete { background: #450a0a; color: #f87171; grid-column: span 2; }
+  .act-btn.logs { background: #1e293b; color: #94a3b8; grid-column: span 2; border: 1px solid #334155; }
+  /* FAB */
+  .fab {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, #4ade80, #22d3ee);
+    border: none; border-radius: 50%;
+    color: #0a0e1a; font-size: 32px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(34, 211, 238, 0.4);
+    z-index: 100;
+  }
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-bg.hidden { display: none; }
+  .modal {
+    background: #1e293b; border-radius: 16px; padding: 24px;
+    max-width: 400px; width: 100%; max-height: 80vh; overflow-y: auto;
+  }
+  .modal h2 { margin-bottom: 16px; font-size: 18px; }
+  .modal input, .modal select {
+    width: 100%; padding: 12px; margin-bottom: 12px;
+    background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+    color: #e8eaed; font-size: 14px;
+  }
+  .modal-btns { display: flex; gap: 8px; margin-top: 12px; }
+  .modal-btns button {
+    flex: 1; padding: 12px; border: none; border-radius: 8px;
+    font-weight: 700; cursor: pointer; font-size: 14px;
+  }
+  .btn-primary { background: linear-gradient(135deg, #4ade80, #22d3ee); color: #0a0e1a; }
+  .btn-secondary { background: #334155; color: #e8eaed; }
+  /* Loading & messages */
+  #loading {
+    text-align: center; padding: 40px 20px; color: #94a3b8;
+  }
+  #errorBanner {
+    background: #7f1d1d; color: #fca5a5; padding: 12px;
+    border-radius: 8px; margin-bottom: 12px; font-size: 13px;
+  }
+  #errorBanner.hidden { display: none; }
+  .empty {
+    text-align: center; padding: 40px 20px; color: #64748b;
+  }
+  .logs-list {
+    max-height: 60vh; overflow-y: auto;
+  }
+  .log-entry {
+    padding: 10px; background: #0f172a; border-radius: 6px;
+    margin-bottom: 6px; font-size: 12px;
+  }
+  .log-entry.success { border-left: 3px solid #4ade80; }
+  .log-entry.fail { border-left: 3px solid #ef4444; }
+  .log-action { font-weight: 700; color: #e8eaed; }
+  .log-time { color: #64748b; font-size: 10px; margin-top: 2px; }
+  .log-detail { color: #94a3b8; margin-top: 4px; }
 </style>
 </head>
 <body>
 
-<div id="loginScreen" class="login-screen">
-  <div class="login-box">
-    <h2>⚡ SparkAI Admin</h2>
-    <p>Ingresa el PIN</p>
-    <input type="password" class="pin-input" id="pinInput" placeholder="••••" maxlength="4" inputmode="numeric" autofocus>
-    <button class="btn-login" onclick="login()">INGRESAR</button>
-    <p id="loginError" style="color: #F44336; margin-top: 15px; display: none;">PIN incorrecto</p>
-  </div>
+<!-- PIN GATE -->
+<div id="pinGate">
+  <div class="logo" translate="no">SparkAI</div>
+  <div class="tagline" translate="no">Admin Panel</div>
+  <input type="tel" id="pinInput" maxlength="4" placeholder="PIN" inputmode="numeric" autocomplete="off">
+  <button id="pinBtn" type="button">UNLOCK</button>
+  <div id="pinError"></div>
 </div>
 
-<div id="dashboard" class="container" style="display:none; position:relative;">
-  <button class="logout-btn" onclick="logout()">Salir</button>
+<!-- MAIN APP -->
+<div id="app" class="hidden">
   <div class="header">
-    <h1>⚡ SparkAI Admin Panel</h1>
-    <p>Gestión de licencias en tiempo real</p>
+    <h1 translate="no">SparkAI Licenses</h1>
+    <button class="logout-btn" type="button" onclick="logout()">Lock</button>
   </div>
-  <div class="stats" id="stats"></div>
-  <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('all')">Todas</button>
-    <button class="filter-btn" onclick="setFilter('active')">Activas</button>
-    <button class="filter-btn" onclick="setFilter('pending')">Pendientes</button>
-    <button class="filter-btn" onclick="setFilter('expired')">Expiradas</button>
-    <button class="filter-btn" onclick="setFilter('blocked')">Bloqueadas</button>
+
+  <div id="errorBanner" class="hidden"></div>
+
+  <div class="stats">
+    <div class="stat total"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total</div></div>
+    <div class="stat active"><div class="stat-num" id="statActive">0</div><div class="stat-label">Active</div></div>
+    <div class="stat expired"><div class="stat-num" id="statExpired">0</div><div class="stat-label">Expired</div></div>
+    <div class="stat blocked"><div class="stat-num" id="statBlocked">0</div><div class="stat-label">Blocked</div></div>
   </div>
-  <div class="licenses" id="licenses"></div>
+
+  <div id="loading">Loading licenses...</div>
+  <div id="licensesList"></div>
 </div>
 
-<button class="fab" id="fabBtn" onclick="openCreateModal()" style="display:none;">+</button>
+<!-- FAB -->
+<button class="fab hidden" id="fabBtn" type="button" onclick="openCreateModal()">+</button>
 
-<div class="modal-overlay" id="createModal">
+<!-- CREATE MODAL -->
+<div class="modal-bg hidden" id="createModal">
   <div class="modal">
-    <h2>➕ Nueva Licencia</h2>
-    <div class="form-group">
-      <label>Email del Cliente</label>
-      <input type="email" id="newEmail" placeholder="cliente@gmail.com">
-    </div>
-    <div class="form-group">
-      <label>Método de Pago</label>
-      <select id="newPayment">
-        <option value="Zelle">Zelle</option>
-        <option value="Cash App">Cash App</option>
-        <option value="Efectivo">Efectivo</option>
-        <option value="Otro">Otro</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Notas (opcional)</label>
-      <textarea id="newNotes" rows="2" placeholder="Cliente recomendado por..."></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-gray" onclick="closeCreateModal()">Cancelar</button>
-      <button class="btn btn-green" onclick="createLicense()">CREAR ($100)</button>
+    <h2>New License</h2>
+    <input type="email" id="newEmail" placeholder="client@email.com" autocomplete="off">
+    <input type="text" id="newCode" readonly style="background:#0a0e1a;color:#22d3ee;font-family:monospace;">
+    <select id="newPayment">
+      <option value="Cash">Cash</option>
+      <option value="Zelle">Zelle</option>
+      <option value="CashApp">CashApp</option>
+      <option value="Venmo">Venmo</option>
+      <option value="Other">Other</option>
+    </select>
+    <input type="text" id="newNotes" placeholder="Notes (optional)">
+    <div class="modal-btns">
+      <button class="btn-secondary" type="button" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn-primary" type="button" onclick="createLicense()">Create ($100)</button>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="logsModal">
+<!-- LOGS MODAL -->
+<div class="modal-bg hidden" id="logsModal">
   <div class="modal">
-    <h2 id="logsTitle">📋 Logs</h2>
-    <div id="logsContent"></div>
-    <div class="modal-actions">
-      <button class="btn btn-gray" onclick="closeLogsModal()">Cerrar</button>
+    <h2>Activity Log</h2>
+    <div class="logs-list" id="logsList"></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" type="button" onclick="closeLogsModal()">Close</button>
     </div>
   </div>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://gqgiiwqillinmunkprdi.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D';
-const ADMIN_PIN = '4521';
+// =====================================================
+// SparkAI Admin Panel - PIN: 4521
+// =====================================================
+"use strict";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-let currentFilter = 'all';
-let licensesCache = [];
+var SUPABASE_URL = "https://gqgiiwqillinmunkprdi.supabase.co";
+var SUPABASE_KEY = "sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D";
+var ADMIN_PIN = "4521";
+var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-window.addEventListener('DOMContentLoaded', () => {
-  if (localStorage.getItem('sparkai_admin_session') === 'authenticated') {
-    showDashboard();
-  }
-  document.getElementById('pinInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') login();
-  });
-});
+var licenses = [];
 
-function login() {
-  const pin = document.getElementById('pinInput').value;
-  if (pin === ADMIN_PIN) {
-    localStorage.setItem('sparkai_admin_session', 'authenticated');
-    showDashboard();
+// ---------- PIN GATE ----------
+function checkPin() {
+  var input = document.getElementById("pinInput");
+  var err = document.getElementById("pinError");
+  var val = (input.value || "").trim();
+
+  if (val === ADMIN_PIN) {
+    try { sessionStorage.setItem("sparkai_unlocked", "1"); } catch(e){}
+    document.getElementById("pinGate").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    document.getElementById("fabBtn").classList.remove("hidden");
+    loadLicenses();
   } else {
-    document.getElementById('loginError').style.display = 'block';
-    document.getElementById('pinInput').value = '';
+    err.textContent = "Wrong PIN";
+    input.value = "";
+    input.focus();
   }
 }
 
 function logout() {
-  if (confirm('¿Cerrar sesión?')) {
-    localStorage.removeItem('sparkai_admin_session');
-    location.reload();
-  }
+  try { sessionStorage.removeItem("sparkai_unlocked"); } catch(e){}
+  location.reload();
 }
 
-function showDashboard() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('fabBtn').style.display = 'flex';
-  loadLicenses();
-  setInterval(loadLicenses, 30000);
+// ---------- SUPABASE FETCH ----------
+function sbHeaders(extra) {
+  var h = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json"
+  };
+  if (extra) for (var k in extra) h[k] = extra[k];
+  return h;
 }
 
-async function loadLicenses() {
-  try {
-    const { data, error } = await supabase
-      .from('licenses')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    licensesCache = data || [];
-    renderStats();
+function showError(msg) {
+  var el = document.getElementById("errorBanner");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  setTimeout(function(){ el.classList.add("hidden"); }, 5000);
+}
+
+function loadLicenses() {
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("licensesList").innerHTML = "";
+
+  fetch(SUPABASE_URL + "/rest/v1/licenses?select=*&order=created_at.desc", {
+    headers: sbHeaders()
+  })
+  .then(function(r){
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  })
+  .then(function(data){
+    licenses = data || [];
     renderLicenses();
-  } catch (e) {
-    console.error('Error loading:', e);
-  }
-}
-
-function renderStats() {
-  const total = licensesCache.length;
-  const active = licensesCache.filter(l => l.status === 'active').length;
-  const expired = licensesCache.filter(l => l.status === 'expired').length;
-  const blocked = licensesCache.filter(l => l.status === 'blocked').length;
-  const revenue = licensesCache.reduce((sum, l) => sum + (parseFloat(l.paid_amount) || 0), 0);
-  document.getElementById('stats').innerHTML = '<div class="stat-card"><div class="value">' + total + '</div><div class="label">Total</div></div><div class="stat-card"><div class="value" style="color:#00E676;">' + active + '</div><div class="label">Activas</div></div><div class="stat-card"><div class="value" style="color:#F44336;">' + expired + '</div><div class="label">Expiradas</div></div><div class="stat-card"><div class="value" style="color:#9E9E9E;">' + blocked + '</div><div class="label">Bloqueadas</div></div><div class="stat-card"><div class="value" style="color:#00E5A0;">$' + revenue.toFixed(0) + '</div><div class="label">Ingresos</div></div>';
-}
-
-function setFilter(f) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  renderLicenses();
+  })
+  .catch(function(e){
+    showError("Load failed: " + e.message);
+    document.getElementById("loading").textContent = "Failed to load. Check connection.";
+  });
 }
 
 function renderLicenses() {
-  let filtered = licensesCache;
-  if (currentFilter !== 'all') {
-    filtered = licensesCache.filter(l => l.status === currentFilter);
-  }
-  if (filtered.length === 0) {
-    document.getElementById('licenses').innerHTML = '<div class="empty-state">No hay licencias para mostrar</div>';
-    return;
-  }
-  document.getElementById('licenses').innerHTML = filtered.map(l => {
-    const daysLeft = l.expires_at ? Math.max(0, Math.ceil((new Date(l.expires_at) - new Date()) / (1000*60*60*24))) : '-';
-    const isBlocked = l.status === 'blocked';
-    return '<div class="license-card"><div class="license-header"><div><div class="license-email">' + l.email + '</div><div class="license-code">' + l.code + '</div></div><div class="status-badge status-' + l.status + '">' + l.status + '</div></div><div class="license-info"><div class="info-item"><span>Días restantes</span><strong>' + daysLeft + '</strong></div><div class="info-item"><span>Dispositivo</span><strong>' + (l.device_name || 'No activado') + '</strong></div><div class="info-item"><span>Pagado</span><strong>$' + (l.paid_amount || 0) + '</strong></div></div><div class="license-actions"><button class="btn btn-green" onclick="renewLicense(\'' + l.id + '\')">🔄 Renovar +$30</button><button class="btn btn-blue" onclick="resetDevice(\'' + l.id + '\', \'' + l.email + '\')">📱 Resetear Device</button><button class="btn ' + (isBlocked ? 'btn-yellow' : 'btn-red') + '" onclick="toggleBlock(\'' + l.id + '\', ' + isBlocked + ')">' + (isBlocked ? '✅ Desbloquear' : '🚫 Bloquear') + '</button><button class="btn btn-gray" onclick="viewLogs(\'' + l.id + '\', \'' + l.email + '\')">📋 Logs</button><button class="btn btn-red" onclick="deleteLicense(\'' + l.id + '\', \'' + l.email + '\')">🗑️ Eliminar</button></div></div>';
-  }).join('');
-}
+  document.getElementById("loading").style.display = "none";
+  var list = document.getElementById("licensesList");
 
-function openCreateModal() {
-  document.getElementById('createModal').classList.add('active');
-}
+  var now = Date.now();
+  var total = licenses.length;
+  var active = 0, expired = 0, blocked = 0;
 
-function closeCreateModal() {
-  document.getElementById('createModal').classList.remove('active');
-  document.getElementById('newEmail').value = '';
-  document.getElementById('newNotes').value = '';
-}
-
-function generateCode() {
-  const chars = '0123456789ABCDEF';
-  let code = 'SPARKAI';
-  for (let i = 0; i < 3; i++) {
-    code += '-';
-    for (let j = 0; j < 4; j++) {
-      code += chars[Math.floor(Math.random() * chars.length)];
+  for (var i = 0; i < licenses.length; i++) {
+    var L = licenses[i];
+    if (L.status === "blocked") blocked++;
+    else if (L.status === "expired") expired++;
+    else if (L.status === "active") {
+      var exp = L.expires_at ? new Date(L.expires_at).getTime() : 0;
+      if (exp && exp < now) expired++; else active++;
     }
   }
-  return code;
-}
 
-async function createLicense() {
-  const email = document.getElementById('newEmail').value.trim().toLowerCase();
-  const payment = document.getElementById('newPayment').value;
-  const notes = document.getElementById('newNotes').value.trim();
-  if (!email || !email.includes('@')) {
-    alert('Ingresa un email válido');
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statActive").textContent = active;
+  document.getElementById("statExpired").textContent = expired;
+  document.getElementById("statBlocked").textContent = blocked;
+
+  if (total === 0) {
+    list.innerHTML = '<div class="empty">No licenses yet. Tap + to create one.</div>';
     return;
   }
-  const code = generateCode();
-  try {
-    const { error } = await supabase.from('licenses').insert({
-      email, code, status: 'pending',
-      paid_amount: 100, payment_method: payment, notes: notes || null
-    });
-    if (error) throw error;
-    try {
-      await navigator.clipboard.writeText(code);
-      alert('✅ Licencia creada!\n\nCódigo (copiado al portapapeles):\n' + code + '\n\nMándaselo al cliente.');
-    } catch {
-      alert('✅ Licencia creada!\n\nCódigo:\n' + code + '\n\nCópialo y mándaselo al cliente.');
-    }
-    closeCreateModal();
-    loadLicenses();
-  } catch (e) {
-    alert('Error: ' + e.message);
+
+  var html = "";
+  for (var j = 0; j < licenses.length; j++) {
+    html += renderCard(licenses[j], now);
   }
+  list.innerHTML = html;
 }
 
-async function renewLicense(id) {
-  if (!confirm('¿Renovar por 7 días más? (suma $30 al total pagado)')) return;
-  const license = licensesCache.find(l => l.id === id);
-  const newPaid = (parseFloat(license.paid_amount) || 0) + 30;
-  try {
-    const { error } = await supabase.from('licenses').update({
-      device_id: null, device_name: null, activated_at: null, expires_at: null,
-      status: 'pending', paid_amount: newPaid
-    }).eq('id', id);
-    if (error) throw error;
-    alert('✅ Licencia renovada! El cliente puede reactivar con su mismo código.');
-    loadLicenses();
-  } catch (e) {
-    alert('Error: ' + e.message);
+function renderCard(L, now) {
+  var status = L.status || "unknown";
+  var statusClass = status;
+  var expMs = L.expires_at ? new Date(L.expires_at).getTime() : 0;
+  if (status === "active" && expMs && expMs < now) {
+    status = "expired"; statusClass = "expired";
   }
+
+  var daysLeft = "";
+  if (status === "active" && expMs) {
+    var d = Math.max(0, Math.ceil((expMs - now) / 86400000));
+    daysLeft = d + "d left";
+  } else if (status === "expired") {
+    daysLeft = "Expired";
+  } else if (status === "blocked") {
+    daysLeft = "Blocked";
+  }
+
+  var paid = L.paid_amount || 0;
+  var device = L.device_name || "Not bound";
+  var created = L.created_at ? new Date(L.created_at).toLocaleDateString() : "";
+
+  var actions = "";
+  if (status === "blocked") {
+    actions += '<button class="act-btn unblock" onclick="unblockLicense(\'' + L.id + '\')">Unblock</button>';
+  } else {
+    actions += '<button class="act-btn renew" onclick="renewLicense(\'' + L.id + '\')">Renew +$30</button>';
+    actions += '<button class="act-btn block" onclick="blockLicense(\'' + L.id + '\')">Block</button>';
+  }
+  if (L.device_id) {
+    actions += '<button class="act-btn reset" onclick="resetDevice(\'' + L.id + '\')">Reset Device</button>';
+  }
+  actions += '<button class="act-btn logs" onclick="viewLogs(\'' + escapeAttr(L.email) + '\')">View Logs</button>';
+  actions += '<button class="act-btn delete" onclick="deleteLicense(\'' + L.id + '\',\'' + escapeAttr(L.email) + '\')">Delete</button>';
+
+  return (
+    '<div class="license-card ' + statusClass + '">' +
+      '<div class="lic-email">' + escapeHtml(L.email || "") + '</div>' +
+      '<div class="lic-code">' + escapeHtml(L.code || "") + '</div>' +
+      '<div class="lic-meta">' +
+        '<span class="badge ' + statusClass + '">' + status + '</span>' +
+        '<span>' + daysLeft + '</span>' +
+        '<span>$' + paid + '</span>' +
+        '<span>' + escapeHtml(device) + '</span>' +
+        '<span>Created: ' + created + '</span>' +
+      '</div>' +
+      '<div class="lic-actions">' + actions + '</div>' +
+    '</div>'
+  );
 }
 
-async function resetDevice(id, email) {
-  if (!confirm('¿Resetear el dispositivo de ' + email + '?\n\nEl cliente podrá reactivar con su mismo código en CUALQUIER dispositivo.\n\nNO suma dinero, solo limpia el device_id.')) return;
-  try {
-    const { error } = await supabase.from('licenses').update({
-      device_id: null, device_name: null
-    }).eq('id', id);
-    if (error) throw error;
-    alert('✅ Device reseteado!\n\nEl cliente puede reactivar inmediatamente con su mismo código.');
-    loadLicenses();
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
+// ---------- ACTIONS ----------
+function renewLicense(id) {
+  if (!confirm("Renew this license for +7 days and $30?")) return;
+  var L = licenses.find(function(x){ return x.id === id; });
+  if (!L) return;
+
+  var base = (L.expires_at && new Date(L.expires_at).getTime() > Date.now())
+    ? new Date(L.expires_at).getTime()
+    : Date.now();
+  var newExp = new Date(base + WEEK_MS).toISOString();
+  var newPaid = (L.paid_amount || 0) + 30;
+
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
+    method: "PATCH",
+    headers: sbHeaders({ "Prefer": "return=representation" }),
+    body: JSON.stringify({
+      status: "active",
+      expires_at: newExp,
+      paid_amount: newPaid
+    })
+  })
+  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(function(){ logEvent(L.email, L.id, "renew", true, null); loadLicenses(); })
+  .catch(function(e){ showError("Renew failed: " + e.message); });
 }
 
-async function toggleBlock(id, isBlocked) {
-  const newStatus = isBlocked ? 'pending' : 'blocked';
-  const msg = isBlocked ? '¿Desbloquear?' : '¿Bloquear? El cliente perderá acceso.';
-  if (!confirm(msg)) return;
-  try {
-    const { error } = await supabase.from('licenses').update({ status: newStatus }).eq('id', id);
-    if (error) throw error;
-    loadLicenses();
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
+function blockLicense(id) {
+  if (!confirm("Block this client? The app will sign out within 30 min.")) return;
+  var L = licenses.find(function(x){ return x.id === id; });
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
+    method: "PATCH",
+    headers: sbHeaders(),
+    body: JSON.stringify({ status: "blocked" })
+  })
+  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
+  .then(function(){ if(L) logEvent(L.email, L.id, "blocked_by_admin", true, null); loadLicenses(); })
+  .catch(function(e){ showError("Block failed: " + e.message); });
 }
 
-async function deleteLicense(id, email) {
-  if (!confirm('¿ELIMINAR la licencia de ' + email + '?\n\nEsta acción NO se puede deshacer.')) return;
-  if (!confirm('¿Estás seguro? Última oportunidad.')) return;
-  try {
-    const { error } = await supabase.from('licenses').delete().eq('id', id);
-    if (error) throw error;
-    loadLicenses();
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
+function unblockLicense(id) {
+  if (!confirm("Unblock this license?")) return;
+  var L = licenses.find(function(x){ return x.id === id; });
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
+    method: "PATCH",
+    headers: sbHeaders(),
+    body: JSON.stringify({ status: "active" })
+  })
+  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
+  .then(function(){ if(L) logEvent(L.email, L.id, "unblocked_by_admin", true, null); loadLicenses(); })
+  .catch(function(e){ showError("Unblock failed: " + e.message); });
 }
 
-async function viewLogs(id, email) {
-  document.getElementById('logsTitle').textContent = '📋 Logs - ' + email;
-  document.getElementById('logsContent').innerHTML = '<p style="color:#aaa;">Cargando...</p>';
-  document.getElementById('logsModal').classList.add('active');
-  try {
-    const { data, error } = await supabase
-      .from('activation_logs')
-      .select('*')
-      .eq('license_id', id)
-      .order('created_at', { ascending: false })
-      .limit(20);
-    if (error) throw error;
-    if (!data || data.length === 0) {
-      document.getElementById('logsContent').innerHTML = '<p style="color:#aaa;">No hay registros</p>';
+function resetDevice(id) {
+  if (!confirm("Reset device binding? Client can re-activate on a new device.")) return;
+  var L = licenses.find(function(x){ return x.id === id; });
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
+    method: "PATCH",
+    headers: sbHeaders(),
+    body: JSON.stringify({ device_id: null, device_name: null })
+  })
+  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
+  .then(function(){ if(L) logEvent(L.email, L.id, "device_reset", true, null); loadLicenses(); })
+  .catch(function(e){ showError("Reset failed: " + e.message); });
+}
+
+function deleteLicense(id, email) {
+  if (!confirm("DELETE license for " + email + "?\n\nTIP: Prefer BLOCK over DELETE. Delete removes history.")) return;
+  if (!confirm("Are you SURE? This cannot be undone.")) return;
+
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
+    method: "DELETE",
+    headers: sbHeaders()
+  })
+  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
+  .then(function(){ loadLicenses(); })
+  .catch(function(e){ showError("Delete failed: " + e.message); });
+}
+
+// ---------- LOGS ----------
+function viewLogs(email) {
+  document.getElementById("logsModal").classList.remove("hidden");
+  document.getElementById("logsList").innerHTML = "Loading...";
+
+  fetch(SUPABASE_URL + "/rest/v1/license_logs?email=eq." + encodeURIComponent(email) + "&order=created_at.desc&limit=50", {
+    headers: sbHeaders()
+  })
+  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(function(logs){
+    if (!logs || logs.length === 0) {
+      document.getElementById("logsList").innerHTML = '<div class="empty">No logs yet</div>';
       return;
     }
-    document.getElementById('logsContent').innerHTML = data.map(log => '<div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px;"><div style="color:' + (log.success ? '#00E676' : '#F44336') + '; font-weight:bold;">' + log.action.toUpperCase() + ' - ' + (log.success ? '✅' : '❌') + '</div><div style="color:#aaa; margin-top:4px;">' + new Date(log.created_at).toLocaleString() + '</div>' + (log.device_name ? '<div style="color:#fff; margin-top:4px;">📱 ' + log.device_name + '</div>' : '') + (log.error_message ? '<div style="color:#F44336; margin-top:4px;">⚠️ ' + log.error_message + '</div>' : '') + '</div>').join('');
-  } catch (e) {
-    document.getElementById('logsContent').innerHTML = '<p style="color:#F44336;">Error: ' + e.message + '</p>';
-  }
+    var html = "";
+    for (var i = 0; i < logs.length; i++) {
+      var lg = logs[i];
+      var cls = lg.success ? "success" : "fail";
+      html += '<div class="log-entry ' + cls + '">';
+      html += '<div class="log-action">' + escapeHtml(lg.action || "") + '</div>';
+      if (lg.device_name) html += '<div class="log-detail">' + escapeHtml(lg.device_name) + '</div>';
+      if (lg.error_message) html += '<div class="log-detail">Error: ' + escapeHtml(lg.error_message) + '</div>';
+      html += '<div class="log-time">' + new Date(lg.created_at).toLocaleString() + '</div>';
+      html += '</div>';
+    }
+    document.getElementById("logsList").innerHTML = html;
+  })
+  .catch(function(e){
+    document.getElementById("logsList").innerHTML = '<div class="empty">Load failed: ' + e.message + '</div>';
+  });
 }
 
 function closeLogsModal() {
-  document.getElementById('logsModal').classList.remove('active');
+  document.getElementById("logsModal").classList.add("hidden");
 }
+
+function logEvent(email, licenseId, action, success, errorMsg) {
+  fetch(SUPABASE_URL + "/rest/v1/license_logs", {
+    method: "POST",
+    headers: sbHeaders(),
+    body: JSON.stringify({
+      license_id: licenseId,
+      email: email,
+      action: action,
+      success: success,
+      error_message: errorMsg
+    })
+  }).catch(function(){});
+}
+
+// ---------- CREATE ----------
+function openCreateModal() {
+  document.getElementById("newEmail").value = "";
+  document.getElementById("newCode").value = generateCode();
+  document.getElementById("newPayment").value = "Cash";
+  document.getElementById("newNotes").value = "";
+  document.getElementById("createModal").classList.remove("hidden");
+}
+
+function closeCreateModal() {
+  document.getElementById("createModal").classList.add("hidden");
+}
+
+function generateCode() {
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no confusable chars
+  function block() {
+    var s = "";
+    for (var i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
+  }
+  return "SPARKAI-" + block() + "-" + block() + "-" + block();
+}
+
+function createLicense() {
+  var email = document.getElementById("newEmail").value.trim().toLowerCase();
+  var code = document.getElementById("newCode").value.trim().toUpperCase();
+  var payment = document.getElementById("newPayment").value;
+  var notes = document.getElementById("newNotes").value.trim();
+
+  if (!email || email.indexOf("@") < 0) {
+    alert("Invalid email");
+    return;
+  }
+
+  var nowIso = new Date().toISOString();
+  var expIso = new Date(Date.now() + WEEK_MS).toISOString();
+
+  fetch(SUPABASE_URL + "/rest/v1/licenses", {
+    method: "POST",
+    headers: sbHeaders({ "Prefer": "return=representation" }),
+    body: JSON.stringify({
+      email: email,
+      code: code,
+      status: "active",
+      paid_amount: 100,
+      payment_method: payment,
+      notes: notes || null,
+      activated_at: null,
+      expires_at: expIso,
+      created_at: nowIso
+    })
+  })
+  .then(function(r){
+    if (!r.ok) return r.text().then(function(t){ throw new Error(t); });
+    return r.json();
+  })
+  .then(function(){
+    var txt = "Email: " + email + "\nCode: " + code;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).catch(function(){});
+    }
+    alert("License created!\n\nCopied to clipboard:\n\n" + txt);
+    closeCreateModal();
+    loadLicenses();
+  })
+  .catch(function(e){ showError("Create failed: " + e.message); });
+}
+
+// ---------- HELPERS ----------
+function escapeHtml(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function escapeAttr(s) {
+  return String(s || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+}
+
+// ---------- INIT ----------
+(function init() {
+  // Auto-unlock if already authenticated this session
+  try {
+    if (sessionStorage.getItem("sparkai_unlocked") === "1") {
+      document.getElementById("pinGate").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+      document.getElementById("fabBtn").classList.remove("hidden");
+      loadLicenses();
+      return;
+    }
+  } catch(e){}
+
+  // Wire PIN entry
+  var btn = document.getElementById("pinBtn");
+  var input = document.getElementById("pinInput");
+  btn.addEventListener("click", checkPin);
+  input.addEventListener("keydown", function(e){
+    if (e.key === "Enter") checkPin();
+  });
+  input.focus();
+})();
 </script>
 
 </body>
