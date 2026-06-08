@@ -17,7 +17,6 @@
     min-height: 100vh;
     padding-bottom: 100px;
   }
-  /* PIN gate */
   #pinGate {
     position: fixed; inset: 0;
     background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 100%);
@@ -51,7 +50,6 @@
   #pinError {
     color: #ef4444; margin-top: 12px; font-size: 14px; min-height: 20px;
   }
-  /* App */
   #app { padding: 16px; max-width: 900px; margin: 0 auto; }
   #app.hidden { display: none; }
   .header {
@@ -68,9 +66,8 @@
     color: #94a3b8; padding: 8px 14px; border-radius: 8px;
     font-size: 12px; cursor: pointer;
   }
-  /* Stats */
   .stats {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
     margin-bottom: 20px;
   }
   .stat {
@@ -80,10 +77,10 @@
   .stat-num { font-size: 22px; font-weight: 800; }
   .stat-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
   .stat.total .stat-num { color: #e8eaed; }
+  .stat.online .stat-num { color: #22d3ee; }
   .stat.active .stat-num { color: #4ade80; }
   .stat.expired .stat-num { color: #f59e0b; }
   .stat.blocked .stat-num { color: #ef4444; }
-  /* Licenses */
   #licensesList { display: flex; flex-direction: column; gap: 12px; }
   .license-card {
     background: #1e293b; border-radius: 12px; padding: 16px;
@@ -92,14 +89,27 @@
   .license-card.active { border-left-color: #4ade80; }
   .license-card.expired { border-left-color: #f59e0b; }
   .license-card.blocked { border-left-color: #ef4444; }
+  .lic-top { display: flex; justify-content: space-between; align-items: center; }
   .lic-email { font-size: 14px; color: #e8eaed; margin-bottom: 4px; word-break: break-all; }
   .lic-code {
     font-family: "Courier New", monospace; font-size: 12px;
     color: #94a3b8; margin-bottom: 8px;
   }
+  .live-dot {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+    padding: 4px 8px; border-radius: 12px;
+  }
+  .live-dot.online { background: #064e3b; color: #4ade80; }
+  .live-dot.offline { background: #1f2937; color: #94a3b8; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .dot.on { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+  .dot.off { background: #64748b; }
   .lic-meta {
     display: flex; flex-wrap: wrap; gap: 8px;
-    font-size: 11px; color: #94a3b8; margin-bottom: 10px;
+    font-size: 11px; color: #94a3b8; margin-bottom: 10px; margin-top: 8px;
   }
   .lic-meta span { background: #0f172a; padding: 4px 8px; border-radius: 6px; }
   .badge {
@@ -124,7 +134,6 @@
   .act-btn.reset { background: #422006; color: #fbbf24; }
   .act-btn.delete { background: #450a0a; color: #f87171; grid-column: span 2; }
   .act-btn.logs { background: #1e293b; color: #94a3b8; grid-column: span 2; border: 1px solid #334155; }
-  /* FAB */
   .fab {
     position: fixed; bottom: 24px; right: 24px;
     width: 60px; height: 60px;
@@ -134,7 +143,6 @@
     cursor: pointer; box-shadow: 0 8px 24px rgba(34, 211, 238, 0.4);
     z-index: 100;
   }
-  /* Modal */
   .modal-bg {
     position: fixed; inset: 0; background: rgba(0,0,0,0.7);
     display: flex; align-items: center; justify-content: center;
@@ -158,7 +166,6 @@
   }
   .btn-primary { background: linear-gradient(135deg, #4ade80, #22d3ee); color: #0a0e1a; }
   .btn-secondary { background: #334155; color: #e8eaed; }
-  /* Loading & messages */
   #loading {
     text-align: center; padding: 40px 20px; color: #94a3b8;
   }
@@ -170,9 +177,7 @@
   .empty {
     text-align: center; padding: 40px 20px; color: #64748b;
   }
-  .logs-list {
-    max-height: 60vh; overflow-y: auto;
-  }
+  .logs-list { max-height: 60vh; overflow-y: auto; }
   .log-entry {
     padding: 10px; background: #0f172a; border-radius: 6px;
     margin-bottom: 6px; font-size: 12px;
@@ -185,8 +190,6 @@
 </style>
 </head>
 <body>
-
-<!-- PIN GATE -->
 <div id="pinGate">
   <div class="logo" translate="no">SparkAI</div>
   <div class="tagline" translate="no">Admin Panel</div>
@@ -194,31 +197,23 @@
   <button id="pinBtn" type="button">UNLOCK</button>
   <div id="pinError"></div>
 </div>
-
-<!-- MAIN APP -->
 <div id="app" class="hidden">
   <div class="header">
     <h1 translate="no">SparkAI Licenses</h1>
     <button class="logout-btn" type="button" onclick="logout()">Lock</button>
   </div>
-
   <div id="errorBanner" class="hidden"></div>
-
   <div class="stats">
     <div class="stat total"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total</div></div>
+    <div class="stat online"><div class="stat-num" id="statOnline">0</div><div class="stat-label">En línea</div></div>
     <div class="stat active"><div class="stat-num" id="statActive">0</div><div class="stat-label">Active</div></div>
     <div class="stat expired"><div class="stat-num" id="statExpired">0</div><div class="stat-label">Expired</div></div>
     <div class="stat blocked"><div class="stat-num" id="statBlocked">0</div><div class="stat-label">Blocked</div></div>
   </div>
-
   <div id="loading">Loading licenses...</div>
   <div id="licensesList"></div>
 </div>
-
-<!-- FAB -->
 <button class="fab hidden" id="fabBtn" type="button" onclick="openCreateModal()">+</button>
-
-<!-- CREATE MODAL -->
 <div class="modal-bg hidden" id="createModal">
   <div class="modal">
     <h2>New License</h2>
@@ -234,12 +229,10 @@
     <input type="text" id="newNotes" placeholder="Notes (optional)">
     <div class="modal-btns">
       <button class="btn-secondary" type="button" onclick="closeCreateModal()">Cancel</button>
-      <button class="btn-primary" type="button" onclick="createLicense()">Create ($100)</button>
+      <button class="btn-primary" type="button" onclick="createLicense()">Create ($150)</button>
     </div>
   </div>
 </div>
-
-<!-- LOGS MODAL -->
 <div class="modal-bg hidden" id="logsModal">
   <div class="modal">
     <h2>Activity Log</h2>
@@ -249,45 +242,42 @@
     </div>
   </div>
 </div>
-
 <script>
-// =====================================================
-// SparkAI Admin Panel - PIN: 4521
-// =====================================================
 "use strict";
-
 var SUPABASE_URL = "https://gqgiiwqillinmunkprdi.supabase.co";
 var SUPABASE_KEY = "sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D";
 var ADMIN_PIN = "4521";
 var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
+var ONLINE_MS = 6 * 60 * 1000; // 6 min sin latido = desconectado
 var licenses = [];
+var refreshTimer = null;
 
-// ---------- PIN GATE ----------
 function checkPin() {
   var input = document.getElementById("pinInput");
   var err = document.getElementById("pinError");
   var val = (input.value || "").trim();
-
   if (val === ADMIN_PIN) {
     try { sessionStorage.setItem("sparkai_unlocked", "1"); } catch(e){}
     document.getElementById("pinGate").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     document.getElementById("fabBtn").classList.remove("hidden");
-    loadLicenses();
+    startAutoRefresh();
   } else {
     err.textContent = "Wrong PIN";
     input.value = "";
     input.focus();
   }
 }
-
 function logout() {
   try { sessionStorage.removeItem("sparkai_unlocked"); } catch(e){}
+  if (refreshTimer) clearInterval(refreshTimer);
   location.reload();
 }
-
-// ---------- SUPABASE FETCH ----------
+function startAutoRefresh() {
+  loadLicenses();
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(loadLicenses, 30000); // refresca cada 30s
+}
 function sbHeaders(extra) {
   var h = {
     "apikey": SUPABASE_KEY,
@@ -297,18 +287,13 @@ function sbHeaders(extra) {
   if (extra) for (var k in extra) h[k] = extra[k];
   return h;
 }
-
 function showError(msg) {
   var el = document.getElementById("errorBanner");
   el.textContent = msg;
   el.classList.remove("hidden");
   setTimeout(function(){ el.classList.add("hidden"); }, 5000);
 }
-
 function loadLicenses() {
-  document.getElementById("loading").style.display = "block";
-  document.getElementById("licensesList").innerHTML = "";
-
   fetch(SUPABASE_URL + "/rest/v1/licenses?select=*&order=created_at.desc", {
     headers: sbHeaders()
   })
@@ -325,17 +310,20 @@ function loadLicenses() {
     document.getElementById("loading").textContent = "Failed to load. Check connection.";
   });
 }
-
+function isOnline(L, now) {
+  if (!L.last_seen) return false;
+  var t = new Date(L.last_seen).getTime();
+  return (now - t) < ONLINE_MS;
+}
 function renderLicenses() {
   document.getElementById("loading").style.display = "none";
   var list = document.getElementById("licensesList");
-
   var now = Date.now();
   var total = licenses.length;
-  var active = 0, expired = 0, blocked = 0;
-
+  var active = 0, expired = 0, blocked = 0, online = 0;
   for (var i = 0; i < licenses.length; i++) {
     var L = licenses[i];
+    if (isOnline(L, now)) online++;
     if (L.status === "blocked") blocked++;
     else if (L.status === "expired") expired++;
     else if (L.status === "active") {
@@ -343,24 +331,32 @@ function renderLicenses() {
       if (exp && exp < now) expired++; else active++;
     }
   }
-
   document.getElementById("statTotal").textContent = total;
+  document.getElementById("statOnline").textContent = online;
   document.getElementById("statActive").textContent = active;
   document.getElementById("statExpired").textContent = expired;
   document.getElementById("statBlocked").textContent = blocked;
-
   if (total === 0) {
     list.innerHTML = '<div class="empty">No licenses yet. Tap + to create one.</div>';
     return;
   }
-
   var html = "";
   for (var j = 0; j < licenses.length; j++) {
     html += renderCard(licenses[j], now);
   }
   list.innerHTML = html;
 }
-
+function lastSeenText(L, now) {
+  if (!L.last_seen) return "Nunca";
+  var diff = now - new Date(L.last_seen).getTime();
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return "hace segundos";
+  if (mins < 60) return "hace " + mins + " min";
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return "hace " + hrs + " h";
+  var days = Math.floor(hrs / 24);
+  return "hace " + days + " d";
+}
 function renderCard(L, now) {
   var status = L.status || "unknown";
   var statusClass = status;
@@ -368,7 +364,6 @@ function renderCard(L, now) {
   if (status === "active" && expMs && expMs < now) {
     status = "expired"; statusClass = "expired";
   }
-
   var daysLeft = "";
   if (status === "active" && expMs) {
     var d = Math.max(0, Math.ceil((expMs - now) / 86400000));
@@ -378,16 +373,18 @@ function renderCard(L, now) {
   } else if (status === "blocked") {
     daysLeft = "Blocked";
   }
-
+  var online = isOnline(L, now);
+  var liveHtml = online
+    ? '<span class="live-dot online"><span class="dot on"></span>EN LÍNEA</span>'
+    : '<span class="live-dot offline"><span class="dot off"></span>' + lastSeenText(L, now) + '</span>';
   var paid = L.paid_amount || 0;
   var device = L.device_name || "Not bound";
   var created = L.created_at ? new Date(L.created_at).toLocaleDateString() : "";
-
   var actions = "";
   if (status === "blocked") {
     actions += '<button class="act-btn unblock" onclick="unblockLicense(\'' + L.id + '\')">Unblock</button>';
   } else {
-    actions += '<button class="act-btn renew" onclick="renewLicense(\'' + L.id + '\')">Renew +$30</button>';
+    actions += '<button class="act-btn renew" onclick="renewLicense(\'' + L.id + '\')">Renew +$40</button>';
     actions += '<button class="act-btn block" onclick="blockLicense(\'' + L.id + '\')">Block</button>';
   }
   if (L.device_id) {
@@ -395,10 +392,12 @@ function renderCard(L, now) {
   }
   actions += '<button class="act-btn logs" onclick="viewLogs(\'' + escapeAttr(L.email) + '\')">View Logs</button>';
   actions += '<button class="act-btn delete" onclick="deleteLicense(\'' + L.id + '\',\'' + escapeAttr(L.email) + '\')">Delete</button>';
-
   return (
     '<div class="license-card ' + statusClass + '">' +
-      '<div class="lic-email">' + escapeHtml(L.email || "") + '</div>' +
+      '<div class="lic-top">' +
+        '<div class="lic-email">' + escapeHtml(L.email || "") + '</div>' +
+        liveHtml +
+      '</div>' +
       '<div class="lic-code">' + escapeHtml(L.code || "") + '</div>' +
       '<div class="lic-meta">' +
         '<span class="badge ' + statusClass + '">' + status + '</span>' +
@@ -411,19 +410,15 @@ function renderCard(L, now) {
     '</div>'
   );
 }
-
-// ---------- ACTIONS ----------
 function renewLicense(id) {
-  if (!confirm("Renew this license for +7 days and $30?")) return;
+  if (!confirm("Renew this license for +7 days and $40?")) return;
   var L = licenses.find(function(x){ return x.id === id; });
   if (!L) return;
-
   var base = (L.expires_at && new Date(L.expires_at).getTime() > Date.now())
     ? new Date(L.expires_at).getTime()
     : Date.now();
   var newExp = new Date(base + WEEK_MS).toISOString();
-  var newPaid = (L.paid_amount || 0) + 30;
-
+  var newPaid = (L.paid_amount || 0) + 40;
   fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
     method: "PATCH",
     headers: sbHeaders({ "Prefer": "return=representation" }),
@@ -437,7 +432,6 @@ function renewLicense(id) {
   .then(function(){ logEvent(L.email, L.id, "renew", true, null); loadLicenses(); })
   .catch(function(e){ showError("Renew failed: " + e.message); });
 }
-
 function blockLicense(id) {
   if (!confirm("Block this client? The app will sign out within 30 min.")) return;
   var L = licenses.find(function(x){ return x.id === id; });
@@ -450,7 +444,6 @@ function blockLicense(id) {
   .then(function(){ if(L) logEvent(L.email, L.id, "blocked_by_admin", true, null); loadLicenses(); })
   .catch(function(e){ showError("Block failed: " + e.message); });
 }
-
 function unblockLicense(id) {
   if (!confirm("Unblock this license?")) return;
   var L = licenses.find(function(x){ return x.id === id; });
@@ -463,7 +456,6 @@ function unblockLicense(id) {
   .then(function(){ if(L) logEvent(L.email, L.id, "unblocked_by_admin", true, null); loadLicenses(); })
   .catch(function(e){ showError("Unblock failed: " + e.message); });
 }
-
 function resetDevice(id) {
   if (!confirm("Reset device binding? Client can re-activate on a new device.")) return;
   var L = licenses.find(function(x){ return x.id === id; });
@@ -476,11 +468,9 @@ function resetDevice(id) {
   .then(function(){ if(L) logEvent(L.email, L.id, "device_reset", true, null); loadLicenses(); })
   .catch(function(e){ showError("Reset failed: " + e.message); });
 }
-
 function deleteLicense(id, email) {
   if (!confirm("DELETE license for " + email + "?\n\nTIP: Prefer BLOCK over DELETE. Delete removes history.")) return;
   if (!confirm("Are you SURE? This cannot be undone.")) return;
-
   fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
     method: "DELETE",
     headers: sbHeaders()
@@ -489,12 +479,9 @@ function deleteLicense(id, email) {
   .then(function(){ loadLicenses(); })
   .catch(function(e){ showError("Delete failed: " + e.message); });
 }
-
-// ---------- LOGS ----------
 function viewLogs(email) {
   document.getElementById("logsModal").classList.remove("hidden");
   document.getElementById("logsList").innerHTML = "Loading...";
-
   fetch(SUPABASE_URL + "/rest/v1/license_logs?email=eq." + encodeURIComponent(email) + "&order=created_at.desc&limit=50", {
     headers: sbHeaders()
   })
@@ -521,11 +508,9 @@ function viewLogs(email) {
     document.getElementById("logsList").innerHTML = '<div class="empty">Load failed: ' + e.message + '</div>';
   });
 }
-
 function closeLogsModal() {
   document.getElementById("logsModal").classList.add("hidden");
 }
-
 function logEvent(email, licenseId, action, success, errorMsg) {
   fetch(SUPABASE_URL + "/rest/v1/license_logs", {
     method: "POST",
@@ -539,8 +524,6 @@ function logEvent(email, licenseId, action, success, errorMsg) {
     })
   }).catch(function(){});
 }
-
-// ---------- CREATE ----------
 function openCreateModal() {
   document.getElementById("newEmail").value = "";
   document.getElementById("newCode").value = generateCode();
@@ -548,13 +531,11 @@ function openCreateModal() {
   document.getElementById("newNotes").value = "";
   document.getElementById("createModal").classList.remove("hidden");
 }
-
 function closeCreateModal() {
   document.getElementById("createModal").classList.add("hidden");
 }
-
 function generateCode() {
-  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no confusable chars
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   function block() {
     var s = "";
     for (var i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
@@ -562,21 +543,17 @@ function generateCode() {
   }
   return "SPARKAI-" + block() + "-" + block() + "-" + block();
 }
-
 function createLicense() {
   var email = document.getElementById("newEmail").value.trim().toLowerCase();
   var code = document.getElementById("newCode").value.trim().toUpperCase();
   var payment = document.getElementById("newPayment").value;
   var notes = document.getElementById("newNotes").value.trim();
-
   if (!email || email.indexOf("@") < 0) {
     alert("Invalid email");
     return;
   }
-
   var nowIso = new Date().toISOString();
   var expIso = new Date(Date.now() + WEEK_MS).toISOString();
-
   fetch(SUPABASE_URL + "/rest/v1/licenses", {
     method: "POST",
     headers: sbHeaders({ "Prefer": "return=representation" }),
@@ -584,7 +561,7 @@ function createLicense() {
       email: email,
       code: code,
       status: "active",
-      paid_amount: 100,
+      paid_amount: 150,
       payment_method: payment,
       notes: notes || null,
       activated_at: null,
@@ -607,8 +584,6 @@ function createLicense() {
   })
   .catch(function(e){ showError("Create failed: " + e.message); });
 }
-
-// ---------- HELPERS ----------
 function escapeHtml(s) {
   return String(s || "")
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -617,21 +592,16 @@ function escapeHtml(s) {
 function escapeAttr(s) {
   return String(s || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
 }
-
-// ---------- INIT ----------
 (function init() {
-  // Auto-unlock if already authenticated this session
   try {
     if (sessionStorage.getItem("sparkai_unlocked") === "1") {
       document.getElementById("pinGate").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
       document.getElementById("fabBtn").classList.remove("hidden");
-      loadLicenses();
+      startAutoRefresh();
       return;
     }
   } catch(e){}
-
-  // Wire PIN entry
   var btn = document.getElementById("pinBtn");
   var input = document.getElementById("pinInput");
   btn.addEventListener("click", checkPin);
@@ -641,6 +611,5 @@ function escapeAttr(s) {
   input.focus();
 })();
 </script>
-
 </body>
 </html>
