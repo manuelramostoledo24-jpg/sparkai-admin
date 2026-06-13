@@ -67,8 +67,8 @@
     font-size: 12px; cursor: pointer;
   }
   .stats {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
-    margin-bottom: 20px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-bottom: 16px;
   }
   .stat {
     background: #1e293b; border-radius: 10px;
@@ -79,14 +79,51 @@
   .stat.total .stat-num { color: #e8eaed; }
   .stat.online .stat-num { color: #22d3ee; }
   .stat.active .stat-num { color: #4ade80; }
+  .stat.soon .stat-num { color: #fbbf24; }
   .stat.expired .stat-num { color: #f59e0b; }
   .stat.blocked .stat-num { color: #ef4444; }
+  .alert-banner {
+    background: #422006; color: #fbbf24; padding: 12px;
+    border-radius: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 700;
+    border: 1px solid #a16207;
+  }
+  .alert-banner.hidden { display: none; }
+  .top-ref {
+    background: #1e293b; border-radius: 12px; padding: 14px; margin-bottom: 16px;
+    border: 1px solid #334155;
+  }
+  .top-ref.hidden { display: none; }
+  .top-ref h3 { font-size: 13px; color: #4ade80; margin-bottom: 8px; }
+  .ref-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; padding: 6px 0; border-bottom: 1px solid #0f172a;
+  }
+  .ref-row:last-child { border-bottom: none; }
+  .ref-row .cnt { color: #4ade80; font-weight: 700; white-space: nowrap; }
+  .ref-row .em { color: #e8eaed; word-break: break-all; margin-right: 8px; }
+  #searchBox {
+    width: 100%; padding: 12px; margin-bottom: 12px;
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    color: #e8eaed; font-size: 14px; outline: none;
+  }
+  #searchBox:focus { border-color: #22d3ee; }
+  .tabs {
+    display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto;
+  }
+  .tab {
+    flex: 1; min-width: 72px; padding: 9px 6px; text-align: center;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+    background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+    color: #94a3b8; cursor: pointer;
+  }
+  .tab.active { background: #064e3b; color: #4ade80; border-color: #4ade80; }
   #licensesList { display: flex; flex-direction: column; gap: 12px; }
   .license-card {
     background: #1e293b; border-radius: 12px; padding: 16px;
     border-left: 4px solid #334155;
   }
   .license-card.active { border-left-color: #4ade80; }
+  .license-card.expiring { border-left-color: #fbbf24; }
   .license-card.expired { border-left-color: #f59e0b; }
   .license-card.blocked { border-left-color: #ef4444; }
   .lic-top { display: flex; justify-content: space-between; align-items: center; }
@@ -102,9 +139,7 @@
   }
   .live-dot.online { background: #064e3b; color: #4ade80; }
   .live-dot.offline { background: #1f2937; color: #94a3b8; }
-  .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
   .dot.on { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
   .dot.off { background: #64748b; }
   .lic-meta {
@@ -113,11 +148,14 @@
   }
   .lic-meta span { background: #0f172a; padding: 4px 8px; border-radius: 6px; }
   .lic-meta span.ref { background: #064e3b; color: #4ade80; font-weight: 700; }
+  .lic-meta span.warn { background: #422006; color: #fbbf24; font-weight: 700; }
+  .lic-meta span.refby { background: #1e3a8a; color: #93c5fd; }
   .badge {
     display: inline-block; padding: 3px 8px; border-radius: 6px;
     font-size: 10px; font-weight: 700; text-transform: uppercase;
   }
   .badge.active { background: #064e3b; color: #4ade80; }
+  .badge.expiring { background: #422006; color: #fbbf24; }
   .badge.expired { background: #78350f; color: #fbbf24; }
   .badge.blocked { background: #7f1d1d; color: #fca5a5; }
   .lic-actions {
@@ -160,9 +198,7 @@
     background: #0f172a; border: 1px solid #334155; border-radius: 8px;
     color: #e8eaed; font-size: 14px;
   }
-  .modal label {
-    display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px;
-  }
+  .modal label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
   .modal-btns { display: flex; gap: 8px; margin-top: 12px; }
   .modal-btns button {
     flex: 1; padding: 12px; border: none; border-radius: 8px;
@@ -170,17 +206,13 @@
   }
   .btn-primary { background: linear-gradient(135deg, #4ade80, #22d3ee); color: #0a0e1a; }
   .btn-secondary { background: #334155; color: #e8eaed; }
-  #loading {
-    text-align: center; padding: 40px 20px; color: #94a3b8;
-  }
+  #loading { text-align: center; padding: 40px 20px; color: #94a3b8; }
   #errorBanner {
     background: #7f1d1d; color: #fca5a5; padding: 12px;
     border-radius: 8px; margin-bottom: 12px; font-size: 13px;
   }
   #errorBanner.hidden { display: none; }
-  .empty {
-    text-align: center; padding: 40px 20px; color: #64748b;
-  }
+  .empty { text-align: center; padding: 40px 20px; color: #64748b; }
   .logs-list { max-height: 60vh; overflow-y: auto; }
   .log-entry {
     padding: 10px; background: #0f172a; border-radius: 6px;
@@ -207,12 +239,22 @@
     <button class="logout-btn" type="button" onclick="logout()">Lock</button>
   </div>
   <div id="errorBanner" class="hidden"></div>
+  <div id="alertBanner" class="alert-banner hidden"></div>
   <div class="stats">
     <div class="stat total"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total</div></div>
     <div class="stat online"><div class="stat-num" id="statOnline">0</div><div class="stat-label">En línea</div></div>
     <div class="stat active"><div class="stat-num" id="statActive">0</div><div class="stat-label">Active</div></div>
+    <div class="stat soon"><div class="stat-num" id="statSoon">0</div><div class="stat-label">Por vencer</div></div>
     <div class="stat expired"><div class="stat-num" id="statExpired">0</div><div class="stat-label">Expired</div></div>
     <div class="stat blocked"><div class="stat-num" id="statBlocked">0</div><div class="stat-label">Blocked</div></div>
+  </div>
+  <div id="topRef" class="top-ref hidden"></div>
+  <input id="searchBox" type="text" placeholder="🔍 Buscar por email o código" autocomplete="off" oninput="onSearch(this.value)">
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="all" onclick="setTab('all')">Todos</div>
+    <div class="tab" data-tab="active" onclick="setTab('active')">Activos</div>
+    <div class="tab" data-tab="expired" onclick="setTab('expired')">Expirados</div>
+    <div class="tab" data-tab="blocked" onclick="setTab('blocked')">Bloqueados</div>
   </div>
   <div id="loading">Loading licenses...</div>
   <div id="licensesList"></div>
@@ -255,8 +297,11 @@ var SUPABASE_KEY = "sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D";
 var ADMIN_PIN = "4521";
 var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 var ONLINE_MS = 6 * 60 * 1000;
+var ALERT_DAYS = 2;
 var licenses = [];
 var refreshTimer = null;
+var currentTab = "all";
+var currentSearch = "";
 
 function checkPin() {
   var input = document.getElementById("pinInput");
@@ -309,7 +354,7 @@ function loadLicenses() {
   })
   .then(function(data){
     licenses = data || [];
-    renderLicenses();
+    render();
   })
   .catch(function(e){
     showError("Load failed: " + e.message);
@@ -321,36 +366,106 @@ function isOnline(L, now) {
   var t = new Date(L.last_seen).getTime();
   return (now - t) < ONLINE_MS;
 }
-function renderLicenses() {
+function effectiveStatus(L, now) {
+  var s = L.status || "unknown";
+  if (s === "active") {
+    var exp = L.expires_at ? new Date(L.expires_at).getTime() : 0;
+    if (exp && exp < now) return "expired";
+    return "active";
+  }
+  return s;
+}
+function daysLeftNum(L, now) {
+  if (!L.expires_at) return null;
+  var exp = new Date(L.expires_at).getTime();
+  return Math.ceil((exp - now) / 86400000);
+}
+function isExpiringSoon(L, now) {
+  if (effectiveStatus(L, now) !== "active") return false;
+  var d = daysLeftNum(L, now);
+  return d !== null && d <= ALERT_DAYS;
+}
+function sortKey(L, now) {
+  if (effectiveStatus(L, now) === "blocked") return 9e15;
+  if (!L.expires_at) return 8e15;
+  return new Date(L.expires_at).getTime();
+}
+function render() {
   document.getElementById("loading").style.display = "none";
-  var list = document.getElementById("licensesList");
   var now = Date.now();
   var total = licenses.length;
-  var active = 0, expired = 0, blocked = 0, online = 0;
+  var active = 0, expired = 0, blocked = 0, online = 0, soon = 0;
   for (var i = 0; i < licenses.length; i++) {
     var L = licenses[i];
     if (isOnline(L, now)) online++;
-    if (L.status === "blocked") blocked++;
-    else if (L.status === "expired") expired++;
-    else if (L.status === "active") {
-      var exp = L.expires_at ? new Date(L.expires_at).getTime() : 0;
-      if (exp && exp < now) expired++; else active++;
+    var es = effectiveStatus(L, now);
+    if (es === "blocked") blocked++;
+    else if (es === "expired") expired++;
+    else if (es === "active") {
+      active++;
+      if (isExpiringSoon(L, now)) soon++;
     }
   }
   document.getElementById("statTotal").textContent = total;
   document.getElementById("statOnline").textContent = online;
   document.getElementById("statActive").textContent = active;
+  document.getElementById("statSoon").textContent = soon;
   document.getElementById("statExpired").textContent = expired;
   document.getElementById("statBlocked").textContent = blocked;
-  if (total === 0) {
-    list.innerHTML = '<div class="empty">No licenses yet. Tap + to create one.</div>';
+
+  var alertEl = document.getElementById("alertBanner");
+  if (soon > 0) {
+    alertEl.textContent = "⚠️ " + soon + (soon === 1 ? " cliente vence pronto (≤2 días)" : " clientes vencen pronto (≤2 días)");
+    alertEl.classList.remove("hidden");
+  } else {
+    alertEl.classList.add("hidden");
+  }
+
+  renderTopReferrers();
+
+  var filtered = [];
+  for (var j = 0; j < licenses.length; j++) {
+    var lic = licenses[j];
+    var st = effectiveStatus(lic, now);
+    if (currentTab === "active" && st !== "active") continue;
+    if (currentTab === "expired" && st !== "expired") continue;
+    if (currentTab === "blocked" && st !== "blocked") continue;
+    if (currentSearch) {
+      var em = (lic.email || "").toLowerCase();
+      var cd = (lic.code || "").toLowerCase();
+      if (em.indexOf(currentSearch) < 0 && cd.indexOf(currentSearch) < 0) continue;
+    }
+    filtered.push(lic);
+  }
+  filtered.sort(function(a, b){ return sortKey(a, now) - sortKey(b, now); });
+
+  var list = document.getElementById("licensesList");
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty">No hay clientes en esta vista.</div>';
     return;
   }
   var html = "";
-  for (var j = 0; j < licenses.length; j++) {
-    html += renderCard(licenses[j], now);
+  for (var k = 0; k < filtered.length; k++) {
+    html += renderCard(filtered[k], now);
   }
   list.innerHTML = html;
+}
+function renderTopReferrers() {
+  var box = document.getElementById("topRef");
+  var refs = [];
+  for (var i = 0; i < licenses.length; i++) {
+    if ((licenses[i].referral_count || 0) > 0) refs.push(licenses[i]);
+  }
+  if (refs.length === 0) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+  refs.sort(function(a, b){ return (b.referral_count || 0) - (a.referral_count || 0); });
+  var max = Math.min(refs.length, 5);
+  var html = '<h3>🏆 Top referidores</h3>';
+  for (var j = 0; j < max; j++) {
+    html += '<div class="ref-row"><span class="em">' + escapeHtml(refs[j].email || "") +
+            '</span><span class="cnt">🎁 ' + (refs[j].referral_count || 0) + '</span></div>';
+  }
+  box.innerHTML = html;
+  box.classList.remove("hidden");
 }
 function lastSeenText(L, now) {
   if (!L.last_seen) return "Nunca";
@@ -364,21 +479,26 @@ function lastSeenText(L, now) {
   return "hace " + days + " d";
 }
 function renderCard(L, now) {
-  var status = L.status || "unknown";
-  var statusClass = status;
-  var expMs = L.expires_at ? new Date(L.expires_at).getTime() : 0;
-  if (status === "active" && expMs && expMs < now) {
-    status = "expired"; statusClass = "expired";
+  var es = effectiveStatus(L, now);
+  var expiring = isExpiringSoon(L, now);
+  var statusClass = es;
+  if (expiring) statusClass = "active expiring";
+  var badgeClass = expiring ? "expiring" : es;
+  var badgeText = expiring ? "vence pronto" : es;
+
+  var dnum = daysLeftNum(L, now);
+  var daysHtml = "";
+  if (es === "active") {
+    var dtxt = (dnum !== null) ? (Math.max(0, dnum) + "d left") : "";
+    daysHtml = expiring
+      ? '<span class="warn">⏰ ' + (dnum <= 0 ? "vence hoy" : "vence en " + dnum + "d") + '</span>'
+      : '<span>' + dtxt + '</span>';
+  } else if (es === "expired") {
+    daysHtml = '<span class="warn">Expired</span>';
+  } else if (es === "blocked") {
+    daysHtml = '<span>Blocked</span>';
   }
-  var daysLeft = "";
-  if (status === "active" && expMs) {
-    var d = Math.max(0, Math.ceil((expMs - now) / 86400000));
-    daysLeft = d + "d left";
-  } else if (status === "expired") {
-    daysLeft = "Expired";
-  } else if (status === "blocked") {
-    daysLeft = "Blocked";
-  }
+
   var online = isOnline(L, now);
   var liveHtml = online
     ? '<span class="live-dot online"><span class="dot on"></span>EN LÍNEA</span>'
@@ -387,9 +507,11 @@ function renderCard(L, now) {
   var device = L.device_name || "Not bound";
   var created = L.created_at ? new Date(L.created_at).toLocaleDateString() : "";
   var refCount = L.referral_count || 0;
-  var refHtml = refCount > 0 ? '<span class="ref">🎁 ' + refCount + ' referidos</span>' : '';
+  var refHtml = refCount > 0 ? '<span class="ref">🎁 ' + refCount + ' ref</span>' : '';
+  var refByHtml = L.referred_by ? '<span class="refby">Ref. por: ' + escapeHtml(L.referred_by) + '</span>' : '';
+
   var actions = "";
-  if (status === "blocked") {
+  if (es === "blocked") {
     actions += '<button class="act-btn unblock" onclick="unblockLicense(\'' + L.id + '\')">Unblock</button>';
   } else {
     actions += '<button class="act-btn renew" onclick="renewLicense(\'' + L.id + '\')">Renew +$40</button>';
@@ -400,6 +522,7 @@ function renderCard(L, now) {
   }
   actions += '<button class="act-btn logs" onclick="viewLogs(\'' + escapeAttr(L.email) + '\')">View Logs</button>';
   actions += '<button class="act-btn delete" onclick="deleteLicense(\'' + L.id + '\',\'' + escapeAttr(L.email) + '\')">Delete</button>';
+
   return (
     '<div class="license-card ' + statusClass + '">' +
       '<div class="lic-top">' +
@@ -408,16 +531,30 @@ function renderCard(L, now) {
       '</div>' +
       '<div class="lic-code">' + escapeHtml(L.code || "") + '</div>' +
       '<div class="lic-meta">' +
-        '<span class="badge ' + statusClass + '">' + status + '</span>' +
-        '<span>' + daysLeft + '</span>' +
+        '<span class="badge ' + badgeClass + '">' + badgeText + '</span>' +
+        daysHtml +
         '<span>$' + paid + '</span>' +
         '<span>' + escapeHtml(device) + '</span>' +
         '<span>Created: ' + created + '</span>' +
         refHtml +
+        refByHtml +
       '</div>' +
       '<div class="lic-actions">' + actions + '</div>' +
     '</div>'
   );
+}
+function setTab(t) {
+  currentTab = t;
+  var tabs = document.querySelectorAll(".tab");
+  for (var i = 0; i < tabs.length; i++) {
+    if (tabs[i].getAttribute("data-tab") === t) tabs[i].classList.add("active");
+    else tabs[i].classList.remove("active");
+  }
+  render();
+}
+function onSearch(v) {
+  currentSearch = (v || "").trim().toLowerCase();
+  render();
 }
 function renewLicense(id) {
   if (!confirm("Renew this license for +7 days and $40?")) return;
@@ -590,7 +727,6 @@ function createLicense() {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(txt).catch(function(){});
     }
-    // Si tiene referido, premia al que refirio
     if (referredBy && referredBy.indexOf("@") > 0) {
       rewardReferrer(referredBy, email);
     } else {
@@ -601,7 +737,6 @@ function createLicense() {
   })
   .catch(function(e){ showError("Create failed: " + e.message); });
 }
-// Busca al que refirio (A) y le suma 1 semana + cuenta el referido
 function rewardReferrer(referrerEmail, newClientEmail) {
   fetch(SUPABASE_URL + "/rest/v1/licenses?email=eq." + encodeURIComponent(referrerEmail) + "&select=*", {
     headers: sbHeaders()
