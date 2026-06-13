@@ -112,6 +112,7 @@
     font-size: 11px; color: #94a3b8; margin-bottom: 10px; margin-top: 8px;
   }
   .lic-meta span { background: #0f172a; padding: 4px 8px; border-radius: 6px; }
+  .lic-meta span.ref { background: #064e3b; color: #4ade80; font-weight: 700; }
   .badge {
     display: inline-block; padding: 3px 8px; border-radius: 6px;
     font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -158,6 +159,9 @@
     width: 100%; padding: 12px; margin-bottom: 12px;
     background: #0f172a; border: 1px solid #334155; border-radius: 8px;
     color: #e8eaed; font-size: 14px;
+  }
+  .modal label {
+    display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px;
   }
   .modal-btns { display: flex; gap: 8px; margin-top: 12px; }
   .modal-btns button {
@@ -227,6 +231,8 @@
       <option value="Other">Other</option>
     </select>
     <input type="text" id="newNotes" placeholder="Notes (optional)">
+    <label>🎁 Referido por (email de quien lo refirió) — opcional</label>
+    <input type="email" id="newReferredBy" placeholder="referrer@email.com" autocomplete="off">
     <div class="modal-btns">
       <button class="btn-secondary" type="button" onclick="closeCreateModal()">Cancel</button>
       <button class="btn-primary" type="button" onclick="createLicense()">Create ($150)</button>
@@ -248,7 +254,7 @@ var SUPABASE_URL = "https://gqgiiwqillinmunkprdi.supabase.co";
 var SUPABASE_KEY = "sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D";
 var ADMIN_PIN = "4521";
 var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-var ONLINE_MS = 6 * 60 * 1000; // 6 min sin latido = desconectado
+var ONLINE_MS = 6 * 60 * 1000;
 var licenses = [];
 var refreshTimer = null;
 
@@ -276,7 +282,7 @@ function logout() {
 function startAutoRefresh() {
   loadLicenses();
   if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(loadLicenses, 30000); // refresca cada 30s
+  refreshTimer = setInterval(loadLicenses, 30000);
 }
 function sbHeaders(extra) {
   var h = {
@@ -380,6 +386,8 @@ function renderCard(L, now) {
   var paid = L.paid_amount || 0;
   var device = L.device_name || "Not bound";
   var created = L.created_at ? new Date(L.created_at).toLocaleDateString() : "";
+  var refCount = L.referral_count || 0;
+  var refHtml = refCount > 0 ? '<span class="ref">🎁 ' + refCount + ' referidos</span>' : '';
   var actions = "";
   if (status === "blocked") {
     actions += '<button class="act-btn unblock" onclick="unblockLicense(\'' + L.id + '\')">Unblock</button>';
@@ -405,6 +413,7 @@ function renderCard(L, now) {
         '<span>$' + paid + '</span>' +
         '<span>' + escapeHtml(device) + '</span>' +
         '<span>Created: ' + created + '</span>' +
+        refHtml +
       '</div>' +
       '<div class="lic-actions">' + actions + '</div>' +
     '</div>'
@@ -529,6 +538,7 @@ function openCreateModal() {
   document.getElementById("newCode").value = generateCode();
   document.getElementById("newPayment").value = "Cash";
   document.getElementById("newNotes").value = "";
+  document.getElementById("newReferredBy").value = "";
   document.getElementById("createModal").classList.remove("hidden");
 }
 function closeCreateModal() {
@@ -548,6 +558,7 @@ function createLicense() {
   var code = document.getElementById("newCode").value.trim().toUpperCase();
   var payment = document.getElementById("newPayment").value;
   var notes = document.getElementById("newNotes").value.trim();
+  var referredBy = document.getElementById("newReferredBy").value.trim().toLowerCase();
   if (!email || email.indexOf("@") < 0) {
     alert("Invalid email");
     return;
@@ -564,6 +575,7 @@ function createLicense() {
       paid_amount: 150,
       payment_method: payment,
       notes: notes || null,
+      referred_by: referredBy || null,
       activated_at: null,
       expires_at: expIso,
       created_at: nowIso
@@ -578,11 +590,63 @@ function createLicense() {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(txt).catch(function(){});
     }
-    alert("License created!\n\nCopied to clipboard:\n\n" + txt);
-    closeCreateModal();
-    loadLicenses();
+    // Si tiene referido, premia al que refirio
+    if (referredBy && referredBy.indexOf("@") > 0) {
+      rewardReferrer(referredBy, email);
+    } else {
+      alert("License created!\n\nCopied to clipboard:\n\n" + txt);
+      closeCreateModal();
+      loadLicenses();
+    }
   })
   .catch(function(e){ showError("Create failed: " + e.message); });
+}
+// Busca al que refirio (A) y le suma 1 semana + cuenta el referido
+function rewardReferrer(referrerEmail, newClientEmail) {
+  fetch(SUPABASE_URL + "/rest/v1/licenses?email=eq." + encodeURIComponent(referrerEmail) + "&select=*", {
+    headers: sbHeaders()
+  })
+  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+  .then(function(rows){
+    if (!rows || rows.length === 0) {
+      alert("⚠️ Cliente creado, PERO no se encontro al referido:\n" + referrerEmail + "\n\nRevisa que el email este bien escrito. No se dio la semana gratis.");
+      closeCreateModal();
+      loadLicenses();
+      return;
+    }
+    var A = rows[0];
+    var base = (A.expires_at && new Date(A.expires_at).getTime() > Date.now())
+      ? new Date(A.expires_at).getTime()
+      : Date.now();
+    var newExp = new Date(base + WEEK_MS).toISOString();
+    var newCount = (A.referral_count || 0) + 1;
+    fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + A.id, {
+      method: "PATCH",
+      headers: sbHeaders({ "Prefer": "return=representation" }),
+      body: JSON.stringify({
+        status: "active",
+        expires_at: newExp,
+        referral_count: newCount
+      })
+    })
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(){
+      logEvent(A.email, A.id, "referral_reward", true, "Refirio a " + newClientEmail);
+      alert("✅ Cliente creado + premio dado!\n\n" + referrerEmail + " gano 1 semana gratis.\nTotal referidos: " + newCount);
+      closeCreateModal();
+      loadLicenses();
+    })
+    .catch(function(e){
+      alert("⚠️ Cliente creado, pero fallo dar la semana al referido: " + e.message);
+      closeCreateModal();
+      loadLicenses();
+    });
+  })
+  .catch(function(e){
+    alert("⚠️ Cliente creado, pero fallo buscar al referido: " + e.message);
+    closeCreateModal();
+    loadLicenses();
+  });
 }
 function escapeHtml(s) {
   return String(s || "")
