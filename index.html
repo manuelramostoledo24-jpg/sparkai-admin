@@ -12,68 +12,44 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #0a0e1a;
-    color: #e8eaed;
-    min-height: 100vh;
-    padding-bottom: 100px;
+    background: #0a0e1a; color: #e8eaed; min-height: 100vh; padding-bottom: 100px;
   }
   #pinGate {
     position: fixed; inset: 0;
     background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 100%);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9999;
-    padding: 20px;
+    z-index: 9999; padding: 20px;
   }
   #pinGate.hidden { display: none; }
   .logo {
     font-size: 32px; font-weight: 800;
     background: linear-gradient(135deg, #4ade80, #22d3ee);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    margin-bottom: 8px;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;
   }
   .tagline { color: #94a3b8; margin-bottom: 40px; font-size: 14px; }
   #pinInput {
-    width: 200px; padding: 18px;
-    font-size: 28px; text-align: center; letter-spacing: 12px;
-    background: #1e293b; border: 2px solid #334155; border-radius: 12px;
-    color: #fff; margin-bottom: 16px;
-    outline: none;
+    width: 200px; padding: 18px; font-size: 28px; text-align: center; letter-spacing: 12px;
+    background: #1e293b; border: 2px solid #334155; border-radius: 12px; color: #fff; margin-bottom: 16px; outline: none;
   }
   #pinInput:focus { border-color: #22d3ee; }
   #pinBtn {
-    width: 200px; padding: 14px;
-    background: linear-gradient(135deg, #4ade80, #22d3ee);
-    border: none; border-radius: 12px;
-    color: #0a0e1a; font-weight: 700; font-size: 16px;
-    cursor: pointer;
+    width: 200px; padding: 14px; background: linear-gradient(135deg, #4ade80, #22d3ee);
+    border: none; border-radius: 12px; color: #0a0e1a; font-weight: 700; font-size: 16px; cursor: pointer;
   }
-  #pinError {
-    color: #ef4444; margin-top: 12px; font-size: 14px; min-height: 20px;
-  }
+  #pinError { color: #ef4444; margin-top: 12px; font-size: 14px; min-height: 20px; }
   #app { padding: 16px; max-width: 900px; margin: 0 auto; }
   #app.hidden { display: none; }
-  .header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 20px;
-  }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   .header h1 {
-    font-size: 22px;
-    background: linear-gradient(135deg, #4ade80, #22d3ee);
+    font-size: 22px; background: linear-gradient(135deg, #4ade80, #22d3ee);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   }
   .logout-btn {
-    background: #1e293b; border: 1px solid #334155;
-    color: #94a3b8; padding: 8px 14px; border-radius: 8px;
-    font-size: 12px; cursor: pointer;
+    background: #1e293b; border: 1px solid #334155; color: #94a3b8;
+    padding: 8px 14px; border-radius: 8px; font-size: 12px; cursor: pointer;
   }
-  .stats {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-    margin-bottom: 16px;
-  }
-  .stat {
-    background: #1e293b; border-radius: 10px;
-    padding: 12px 8px; text-align: center;
-  }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stat { background: #1e293b; border-radius: 10px; padding: 12px 8px; text-align: center; }
   .stat-num { font-size: 22px; font-weight: 800; }
   .stat-label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
   .stat.total .stat-num { color: #e8eaed; }
@@ -83,15 +59,11 @@
   .stat.expired .stat-num { color: #f59e0b; }
   .stat.blocked .stat-num { color: #ef4444; }
   .alert-banner {
-    background: #422006; color: #fbbf24; padding: 12px;
-    border-radius: 8px; margin-bottom: 12px; font-size: 13px; font-weight: 700;
-    border: 1px solid #a16207;
+    background: #422006; color: #fbbf24; padding: 12px; border-radius: 8px;
+    margin-bottom: 12px; font-size: 13px; font-weight: 700; border: 1px solid #a16207;
   }
   .alert-banner.hidden { display: none; }
-  .top-ref {
-    background: #1e293b; border-radius: 12px; padding: 14px; margin-bottom: 16px;
-    border: 1px solid #334155;
-  }
+  .top-ref { background: #1e293b; border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1px solid #334155; }
   .top-ref.hidden { display: none; }
   .top-ref h3 { font-size: 13px; color: #4ade80; margin-bottom: 8px; }
   .ref-row {
@@ -102,40 +74,29 @@
   .ref-row .cnt { color: #4ade80; font-weight: 700; white-space: nowrap; }
   .ref-row .em { color: #e8eaed; word-break: break-all; margin-right: 8px; }
   #searchBox {
-    width: 100%; padding: 12px; margin-bottom: 12px;
-    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
-    color: #e8eaed; font-size: 14px; outline: none;
+    width: 100%; padding: 12px; margin-bottom: 12px; background: #1e293b;
+    border: 1px solid #334155; border-radius: 10px; color: #e8eaed; font-size: 14px; outline: none;
   }
   #searchBox:focus { border-color: #22d3ee; }
-  .tabs {
-    display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto;
-  }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; }
   .tab {
-    flex: 1; min-width: 72px; padding: 9px 6px; text-align: center;
-    font-size: 12px; font-weight: 600; white-space: nowrap;
-    background: #1e293b; border: 1px solid #334155; border-radius: 8px;
-    color: #94a3b8; cursor: pointer;
+    flex: 1; min-width: 72px; padding: 9px 6px; text-align: center; font-size: 12px;
+    font-weight: 600; white-space: nowrap; background: #1e293b; border: 1px solid #334155;
+    border-radius: 8px; color: #94a3b8; cursor: pointer;
   }
   .tab.active { background: #064e3b; color: #4ade80; border-color: #4ade80; }
   #licensesList { display: flex; flex-direction: column; gap: 12px; }
-  .license-card {
-    background: #1e293b; border-radius: 12px; padding: 16px;
-    border-left: 4px solid #334155;
-  }
+  .license-card { background: #1e293b; border-radius: 12px; padding: 16px; border-left: 4px solid #334155; }
   .license-card.active { border-left-color: #4ade80; }
   .license-card.expiring { border-left-color: #fbbf24; }
   .license-card.expired { border-left-color: #f59e0b; }
   .license-card.blocked { border-left-color: #ef4444; }
   .lic-top { display: flex; justify-content: space-between; align-items: center; }
   .lic-email { font-size: 14px; color: #e8eaed; margin-bottom: 4px; word-break: break-all; }
-  .lic-code {
-    font-family: "Courier New", monospace; font-size: 12px;
-    color: #94a3b8; margin-bottom: 8px;
-  }
+  .lic-code { font-family: "Courier New", monospace; font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
   .live-dot {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 11px; font-weight: 700; white-space: nowrap;
-    padding: 4px 8px; border-radius: 12px;
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
+    white-space: nowrap; padding: 4px 8px; border-radius: 12px;
   }
   .live-dot.online { background: #064e3b; color: #4ade80; }
   .live-dot.offline { background: #1f2937; color: #94a3b8; }
@@ -143,86 +104,69 @@
   .dot.on { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
   .dot.off { background: #64748b; }
   .lic-meta {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    font-size: 11px; color: #94a3b8; margin-bottom: 10px; margin-top: 8px;
+    display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; color: #94a3b8;
+    margin-bottom: 10px; margin-top: 8px;
   }
   .lic-meta span { background: #0f172a; padding: 4px 8px; border-radius: 6px; }
   .lic-meta span.ref { background: #064e3b; color: #4ade80; font-weight: 700; }
   .lic-meta span.warn { background: #422006; color: #fbbf24; font-weight: 700; }
   .lic-meta span.refby { background: #1e3a8a; color: #93c5fd; }
-  .badge {
-    display: inline-block; padding: 3px 8px; border-radius: 6px;
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-  }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
   .badge.active { background: #064e3b; color: #4ade80; }
   .badge.expiring { background: #422006; color: #fbbf24; }
   .badge.expired { background: #78350f; color: #fbbf24; }
   .badge.blocked { background: #7f1d1d; color: #fca5a5; }
-  .lic-actions {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
-    margin-top: 10px;
-  }
-  .act-btn {
-    padding: 8px; font-size: 12px; font-weight: 600;
-    border: none; border-radius: 8px; cursor: pointer;
-    background: #334155; color: #e8eaed;
-  }
+  .lic-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
+  .act-btn { padding: 8px; font-size: 12px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; background: #334155; color: #e8eaed; }
   .act-btn.renew { background: #064e3b; color: #4ade80; }
   .act-btn.block { background: #7f1d1d; color: #fca5a5; }
   .act-btn.unblock { background: #1e3a8a; color: #93c5fd; }
   .act-btn.reset { background: #422006; color: #fbbf24; }
+  .act-btn.stats { background: #312e81; color: #c7d2fe; grid-column: span 2; }
   .act-btn.delete { background: #450a0a; color: #f87171; grid-column: span 2; }
   .act-btn.logs { background: #1e293b; color: #94a3b8; grid-column: span 2; border: 1px solid #334155; }
   .fab {
-    position: fixed; bottom: 24px; right: 24px;
-    width: 60px; height: 60px;
-    background: linear-gradient(135deg, #4ade80, #22d3ee);
-    border: none; border-radius: 50%;
-    color: #0a0e1a; font-size: 32px; font-weight: 700;
-    cursor: pointer; box-shadow: 0 8px 24px rgba(34, 211, 238, 0.4);
-    z-index: 100;
+    position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px;
+    background: linear-gradient(135deg, #4ade80, #22d3ee); border: none; border-radius: 50%;
+    color: #0a0e1a; font-size: 32px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(34, 211, 238, 0.4); z-index: 100;
   }
   .modal-bg {
     position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000; padding: 20px;
+    display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
   }
   .modal-bg.hidden { display: none; }
-  .modal {
-    background: #1e293b; border-radius: 16px; padding: 24px;
-    max-width: 400px; width: 100%; max-height: 80vh; overflow-y: auto;
-  }
-  .modal h2 { margin-bottom: 16px; font-size: 18px; }
+  .modal { background: #1e293b; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; max-height: 80vh; overflow-y: auto; }
+  .modal h2 { margin-bottom: 16px; font-size: 18px; word-break: break-all; }
   .modal input, .modal select {
-    width: 100%; padding: 12px; margin-bottom: 12px;
-    background: #0f172a; border: 1px solid #334155; border-radius: 8px;
-    color: #e8eaed; font-size: 14px;
+    width: 100%; padding: 12px; margin-bottom: 12px; background: #0f172a;
+    border: 1px solid #334155; border-radius: 8px; color: #e8eaed; font-size: 14px;
   }
   .modal label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
   .modal-btns { display: flex; gap: 8px; margin-top: 12px; }
-  .modal-btns button {
-    flex: 1; padding: 12px; border: none; border-radius: 8px;
-    font-weight: 700; cursor: pointer; font-size: 14px;
-  }
+  .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
   .btn-primary { background: linear-gradient(135deg, #4ade80, #22d3ee); color: #0a0e1a; }
   .btn-secondary { background: #334155; color: #e8eaed; }
   #loading { text-align: center; padding: 40px 20px; color: #94a3b8; }
-  #errorBanner {
-    background: #7f1d1d; color: #fca5a5; padding: 12px;
-    border-radius: 8px; margin-bottom: 12px; font-size: 13px;
-  }
+  #errorBanner { background: #7f1d1d; color: #fca5a5; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
   #errorBanner.hidden { display: none; }
   .empty { text-align: center; padding: 40px 20px; color: #64748b; }
   .logs-list { max-height: 60vh; overflow-y: auto; }
-  .log-entry {
-    padding: 10px; background: #0f172a; border-radius: 6px;
-    margin-bottom: 6px; font-size: 12px;
-  }
+  .log-entry { padding: 10px; background: #0f172a; border-radius: 6px; margin-bottom: 6px; font-size: 12px; }
   .log-entry.success { border-left: 3px solid #4ade80; }
   .log-entry.fail { border-left: 3px solid #ef4444; }
   .log-action { font-weight: 700; color: #e8eaed; }
   .log-time { color: #64748b; font-size: 10px; margin-top: 2px; }
   .log-detail { color: #94a3b8; margin-top: 4px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  .sbox { background: #0f172a; border-radius: 8px; padding: 10px 6px; text-align: center; }
+  .sn { font-size: 16px; font-weight: 800; color: #4ade80; }
+  .sl { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+  .order-row {
+    display: flex; justify-content: space-between; gap: 8px; font-size: 11px;
+    padding: 6px 8px; background: #0f172a; border-radius: 6px; margin-bottom: 4px;
+  }
+  .order-row .ot { color: #64748b; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -290,6 +234,15 @@
     </div>
   </div>
 </div>
+<div class="modal-bg hidden" id="statsModal">
+  <div class="modal">
+    <h2 id="statsTitle">Stats</h2>
+    <div id="statsBody" style="max-height:62vh;overflow-y:auto;">Loading...</div>
+    <div class="modal-btns">
+      <button class="btn-secondary" type="button" onclick="closeStatsModal()">Close</button>
+    </div>
+  </div>
+</div>
 <script>
 "use strict";
 var SUPABASE_URL = "https://gqgiiwqillinmunkprdi.supabase.co";
@@ -330,32 +283,19 @@ function startAutoRefresh() {
   refreshTimer = setInterval(loadLicenses, 30000);
 }
 function sbHeaders(extra) {
-  var h = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": "Bearer " + SUPABASE_KEY,
-    "Content-Type": "application/json"
-  };
+  var h = { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json" };
   if (extra) for (var k in extra) h[k] = extra[k];
   return h;
 }
 function showError(msg) {
   var el = document.getElementById("errorBanner");
-  el.textContent = msg;
-  el.classList.remove("hidden");
+  el.textContent = msg; el.classList.remove("hidden");
   setTimeout(function(){ el.classList.add("hidden"); }, 5000);
 }
 function loadLicenses() {
-  fetch(SUPABASE_URL + "/rest/v1/licenses?select=*&order=created_at.desc", {
-    headers: sbHeaders()
-  })
-  .then(function(r){
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return r.json();
-  })
-  .then(function(data){
-    licenses = data || [];
-    render();
-  })
+  fetch(SUPABASE_URL + "/rest/v1/licenses?select=*&order=created_at.desc", { headers: sbHeaders() })
+  .then(function(r){ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+  .then(function(data){ licenses = data || []; render(); })
   .catch(function(e){
     showError("Load failed: " + e.message);
     document.getElementById("loading").textContent = "Failed to load. Check connection.";
@@ -363,8 +303,7 @@ function loadLicenses() {
 }
 function isOnline(L, now) {
   if (!L.last_seen) return false;
-  var t = new Date(L.last_seen).getTime();
-  return (now - t) < ONLINE_MS;
+  return (now - new Date(L.last_seen).getTime()) < ONLINE_MS;
 }
 function effectiveStatus(L, now) {
   var s = L.status || "unknown";
@@ -377,8 +316,7 @@ function effectiveStatus(L, now) {
 }
 function daysLeftNum(L, now) {
   if (!L.expires_at) return null;
-  var exp = new Date(L.expires_at).getTime();
-  return Math.ceil((exp - now) / 86400000);
+  return Math.ceil((new Date(L.expires_at).getTime() - now) / 86400000);
 }
 function isExpiringSoon(L, now) {
   if (effectiveStatus(L, now) !== "active") return false;
@@ -393,18 +331,14 @@ function sortKey(L, now) {
 function render() {
   document.getElementById("loading").style.display = "none";
   var now = Date.now();
-  var total = licenses.length;
-  var active = 0, expired = 0, blocked = 0, online = 0, soon = 0;
+  var total = licenses.length, active = 0, expired = 0, blocked = 0, online = 0, soon = 0;
   for (var i = 0; i < licenses.length; i++) {
     var L = licenses[i];
     if (isOnline(L, now)) online++;
     var es = effectiveStatus(L, now);
     if (es === "blocked") blocked++;
     else if (es === "expired") expired++;
-    else if (es === "active") {
-      active++;
-      if (isExpiringSoon(L, now)) soon++;
-    }
+    else if (es === "active") { active++; if (isExpiringSoon(L, now)) soon++; }
   }
   document.getElementById("statTotal").textContent = total;
   document.getElementById("statOnline").textContent = online;
@@ -417,9 +351,7 @@ function render() {
   if (soon > 0) {
     alertEl.textContent = "⚠️ " + soon + (soon === 1 ? " cliente vence pronto (≤2 días)" : " clientes vencen pronto (≤2 días)");
     alertEl.classList.remove("hidden");
-  } else {
-    alertEl.classList.add("hidden");
-  }
+  } else { alertEl.classList.add("hidden"); }
 
   renderTopReferrers();
 
@@ -440,22 +372,15 @@ function render() {
   filtered.sort(function(a, b){ return sortKey(a, now) - sortKey(b, now); });
 
   var list = document.getElementById("licensesList");
-  if (filtered.length === 0) {
-    list.innerHTML = '<div class="empty">No hay clientes en esta vista.</div>';
-    return;
-  }
+  if (filtered.length === 0) { list.innerHTML = '<div class="empty">No hay clientes en esta vista.</div>'; return; }
   var html = "";
-  for (var k = 0; k < filtered.length; k++) {
-    html += renderCard(filtered[k], now);
-  }
+  for (var k = 0; k < filtered.length; k++) { html += renderCard(filtered[k], now); }
   list.innerHTML = html;
 }
 function renderTopReferrers() {
   var box = document.getElementById("topRef");
   var refs = [];
-  for (var i = 0; i < licenses.length; i++) {
-    if ((licenses[i].referral_count || 0) > 0) refs.push(licenses[i]);
-  }
+  for (var i = 0; i < licenses.length; i++) { if ((licenses[i].referral_count || 0) > 0) refs.push(licenses[i]); }
   if (refs.length === 0) { box.classList.add("hidden"); box.innerHTML = ""; return; }
   refs.sort(function(a, b){ return (b.referral_count || 0) - (a.referral_count || 0); });
   var max = Math.min(refs.length, 5);
@@ -464,19 +389,16 @@ function renderTopReferrers() {
     html += '<div class="ref-row"><span class="em">' + escapeHtml(refs[j].email || "") +
             '</span><span class="cnt">🎁 ' + (refs[j].referral_count || 0) + '</span></div>';
   }
-  box.innerHTML = html;
-  box.classList.remove("hidden");
+  box.innerHTML = html; box.classList.remove("hidden");
 }
 function lastSeenText(L, now) {
   if (!L.last_seen) return "Nunca";
-  var diff = now - new Date(L.last_seen).getTime();
-  var mins = Math.floor(diff / 60000);
+  var mins = Math.floor((now - new Date(L.last_seen).getTime()) / 60000);
   if (mins < 1) return "hace segundos";
   if (mins < 60) return "hace " + mins + " min";
   var hrs = Math.floor(mins / 60);
   if (hrs < 24) return "hace " + hrs + " h";
-  var days = Math.floor(hrs / 24);
-  return "hace " + days + " d";
+  return "hace " + Math.floor(hrs / 24) + " d";
 }
 function renderCard(L, now) {
   var es = effectiveStatus(L, now);
@@ -493,11 +415,8 @@ function renderCard(L, now) {
     daysHtml = expiring
       ? '<span class="warn">⏰ ' + (dnum <= 0 ? "vence hoy" : "vence en " + dnum + "d") + '</span>'
       : '<span>' + dtxt + '</span>';
-  } else if (es === "expired") {
-    daysHtml = '<span class="warn">Expired</span>';
-  } else if (es === "blocked") {
-    daysHtml = '<span>Blocked</span>';
-  }
+  } else if (es === "expired") { daysHtml = '<span class="warn">Expired</span>'; }
+  else if (es === "blocked") { daysHtml = '<span>Blocked</span>'; }
 
   var online = isOnline(L, now);
   var liveHtml = online
@@ -520,14 +439,14 @@ function renderCard(L, now) {
   if (L.device_id) {
     actions += '<button class="act-btn reset" onclick="resetDevice(\'' + L.id + '\')">Reset Device</button>';
   }
+  actions += '<button class="act-btn stats" onclick="viewStats(\'' + escapeAttr(L.email) + '\')">📊 Stats</button>';
   actions += '<button class="act-btn logs" onclick="viewLogs(\'' + escapeAttr(L.email) + '\')">View Logs</button>';
   actions += '<button class="act-btn delete" onclick="deleteLicense(\'' + L.id + '\',\'' + escapeAttr(L.email) + '\')">Delete</button>';
 
   return (
     '<div class="license-card ' + statusClass + '">' +
       '<div class="lic-top">' +
-        '<div class="lic-email">' + escapeHtml(L.email || "") + '</div>' +
-        liveHtml +
+        '<div class="lic-email">' + escapeHtml(L.email || "") + '</div>' + liveHtml +
       '</div>' +
       '<div class="lic-code">' + escapeHtml(L.code || "") + '</div>' +
       '<div class="lic-meta">' +
@@ -536,8 +455,7 @@ function renderCard(L, now) {
         '<span>$' + paid + '</span>' +
         '<span>' + escapeHtml(device) + '</span>' +
         '<span>Created: ' + created + '</span>' +
-        refHtml +
-        refByHtml +
+        refHtml + refByHtml +
       '</div>' +
       '<div class="lic-actions">' + actions + '</div>' +
     '</div>'
@@ -552,27 +470,92 @@ function setTab(t) {
   }
   render();
 }
-function onSearch(v) {
-  currentSearch = (v || "").trim().toLowerCase();
-  render();
+function onSearch(v) { currentSearch = (v || "").trim().toLowerCase(); render(); }
+
+// ===== STATS POR CLIENTE =====
+function viewStats(email) {
+  document.getElementById("statsModal").classList.remove("hidden");
+  document.getElementById("statsTitle").textContent = email;
+  document.getElementById("statsBody").innerHTML = "Loading...";
+  var ordersUrl = SUPABASE_URL + "/rest/v1/order_logs?email=eq." + encodeURIComponent(email) + "&order=created_at.desc&limit=300";
+  var sessUrl = SUPABASE_URL + "/rest/v1/bot_sessions?email=eq." + encodeURIComponent(email) + "&order=started_at.desc&limit=300";
+  Promise.all([
+    fetch(ordersUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }),
+    fetch(sessUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; })
+  ]).then(function(res){
+    renderStats(res[0] || [], res[1] || []);
+  }).catch(function(e){
+    document.getElementById("statsBody").innerHTML = '<div class="empty">Load failed: ' + e.message + '</div>';
+  });
 }
+function renderStats(orders, sessions) {
+  var n = orders.length;
+  var total = 0;
+  for (var i = 0; i < orders.length; i++) { total += parseFloat(orders[i].price) || 0; }
+  var avg = n > 0 ? total / n : 0;
+
+  var times = [];
+  for (var j = 0; j < orders.length; j++) { if (orders[j].created_at) times.push(new Date(orders[j].created_at).getTime()); }
+  times.sort(function(a, b){ return a - b; });
+  var avgGap = "—";
+  if (times.length >= 2) {
+    var sum = 0;
+    for (var k = 1; k < times.length; k++) { sum += (times[k] - times[k-1]); }
+    avgGap = Math.round((sum / (times.length - 1)) / 60000) + " min";
+  }
+
+  var activeMs = 0;
+  for (var s = 0; s < sessions.length; s++) {
+    var se = sessions[s];
+    if (se.started_at && se.ended_at) {
+      activeMs += new Date(se.ended_at).getTime() - new Date(se.started_at).getTime();
+    }
+  }
+  var activeH = Math.floor(activeMs / 3600000);
+  var activeM = Math.floor((activeMs % 3600000) / 60000);
+
+  var lastOrder = (orders.length > 0 && orders[0].created_at) ? new Date(orders[0].created_at).toLocaleString() : "—";
+
+  var html = '<div class="stat-grid">';
+  html += sbox(n, "Órdenes");
+  html += sbox("$" + total.toFixed(2), "Monto total");
+  html += sbox("$" + avg.toFixed(2), "Promedio");
+  html += sbox(avgGap, "Entre órdenes");
+  html += sbox(activeH + "h " + activeM + "m", "Bot activo");
+  html += sbox(sessions.length, "Sesiones");
+  html += '</div>';
+  html += '<div style="font-size:11px;color:#94a3b8;margin:8px 0 12px;">Última orden: ' + lastOrder + '</div>';
+  html += '<h3 style="font-size:13px;color:#4ade80;margin-bottom:6px;">Órdenes recientes</h3>';
+  if (orders.length === 0) {
+    html += '<div class="empty">Sin órdenes registradas aún.</div>';
+  } else {
+    var max = Math.min(orders.length, 25);
+    for (var m = 0; m < max; m++) {
+      var o = orders[m];
+      var when = o.created_at ? new Date(o.created_at).toLocaleString() : "";
+      var price = (parseFloat(o.price) || 0).toFixed(2);
+      var detail = '<b>$' + price + '</b> · ' + escapeHtml(o.tipo || "—") + ' · ' + (o.millas || 0) + 'mi';
+      if (o.store) detail += ' · ' + escapeHtml(o.store);
+      html += '<div class="order-row"><div>' + detail + '</div><div class="ot">' + when + '</div></div>';
+    }
+  }
+  document.getElementById("statsBody").innerHTML = html;
+}
+function sbox(num, label) {
+  return '<div class="sbox"><div class="sn">' + num + '</div><div class="sl">' + label + '</div></div>';
+}
+function closeStatsModal() { document.getElementById("statsModal").classList.add("hidden"); }
+
 function renewLicense(id) {
   if (!confirm("Renew this license for +7 days and $40?")) return;
   var L = licenses.find(function(x){ return x.id === id; });
   if (!L) return;
-  var base = (L.expires_at && new Date(L.expires_at).getTime() > Date.now())
-    ? new Date(L.expires_at).getTime()
-    : Date.now();
+  var base = (L.expires_at && new Date(L.expires_at).getTime() > Date.now()) ? new Date(L.expires_at).getTime() : Date.now();
   var newExp = new Date(base + WEEK_MS).toISOString();
   var newPaid = (L.paid_amount || 0) + 40;
   fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
-    method: "PATCH",
-    headers: sbHeaders({ "Prefer": "return=representation" }),
-    body: JSON.stringify({
-      status: "active",
-      expires_at: newExp,
-      paid_amount: newPaid
-    })
+    method: "PATCH", headers: sbHeaders({ "Prefer": "return=representation" }),
+    body: JSON.stringify({ status: "active", expires_at: newExp, paid_amount: newPaid })
   })
   .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
   .then(function(){ logEvent(L.email, L.id, "renew", true, null); loadLicenses(); })
@@ -581,11 +564,7 @@ function renewLicense(id) {
 function blockLicense(id) {
   if (!confirm("Block this client? The app will sign out within 30 min.")) return;
   var L = licenses.find(function(x){ return x.id === id; });
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
-    method: "PATCH",
-    headers: sbHeaders(),
-    body: JSON.stringify({ status: "blocked" })
-  })
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ status: "blocked" }) })
   .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
   .then(function(){ if(L) logEvent(L.email, L.id, "blocked_by_admin", true, null); loadLicenses(); })
   .catch(function(e){ showError("Block failed: " + e.message); });
@@ -593,11 +572,7 @@ function blockLicense(id) {
 function unblockLicense(id) {
   if (!confirm("Unblock this license?")) return;
   var L = licenses.find(function(x){ return x.id === id; });
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
-    method: "PATCH",
-    headers: sbHeaders(),
-    body: JSON.stringify({ status: "active" })
-  })
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ status: "active" }) })
   .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
   .then(function(){ if(L) logEvent(L.email, L.id, "unblocked_by_admin", true, null); loadLicenses(); })
   .catch(function(e){ showError("Unblock failed: " + e.message); });
@@ -605,22 +580,15 @@ function unblockLicense(id) {
 function resetDevice(id) {
   if (!confirm("Reset device binding? Client can re-activate on a new device.")) return;
   var L = licenses.find(function(x){ return x.id === id; });
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
-    method: "PATCH",
-    headers: sbHeaders(),
-    body: JSON.stringify({ device_id: null, device_name: null })
-  })
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ device_id: null, device_name: null }) })
   .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
   .then(function(){ if(L) logEvent(L.email, L.id, "device_reset", true, null); loadLicenses(); })
   .catch(function(e){ showError("Reset failed: " + e.message); });
 }
 function deleteLicense(id, email) {
-  if (!confirm("DELETE license for " + email + "?\n\nTIP: Prefer BLOCK over DELETE. Delete removes history.")) return;
+  if (!confirm("DELETE license for " + email + "?\n\nTIP: Prefer BLOCK over DELETE.")) return;
   if (!confirm("Are you SURE? This cannot be undone.")) return;
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
-    method: "DELETE",
-    headers: sbHeaders()
-  })
+  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, { method: "DELETE", headers: sbHeaders() })
   .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
   .then(function(){ loadLicenses(); })
   .catch(function(e){ showError("Delete failed: " + e.message); });
@@ -628,15 +596,10 @@ function deleteLicense(id, email) {
 function viewLogs(email) {
   document.getElementById("logsModal").classList.remove("hidden");
   document.getElementById("logsList").innerHTML = "Loading...";
-  fetch(SUPABASE_URL + "/rest/v1/license_logs?email=eq." + encodeURIComponent(email) + "&order=created_at.desc&limit=50", {
-    headers: sbHeaders()
-  })
+  fetch(SUPABASE_URL + "/rest/v1/license_logs?email=eq." + encodeURIComponent(email) + "&order=created_at.desc&limit=50", { headers: sbHeaders() })
   .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
   .then(function(logs){
-    if (!logs || logs.length === 0) {
-      document.getElementById("logsList").innerHTML = '<div class="empty">No logs yet</div>';
-      return;
-    }
+    if (!logs || logs.length === 0) { document.getElementById("logsList").innerHTML = '<div class="empty">No logs yet</div>'; return; }
     var html = "";
     for (var i = 0; i < logs.length; i++) {
       var lg = logs[i];
@@ -650,24 +613,13 @@ function viewLogs(email) {
     }
     document.getElementById("logsList").innerHTML = html;
   })
-  .catch(function(e){
-    document.getElementById("logsList").innerHTML = '<div class="empty">Load failed: ' + e.message + '</div>';
-  });
+  .catch(function(e){ document.getElementById("logsList").innerHTML = '<div class="empty">Load failed: ' + e.message + '</div>'; });
 }
-function closeLogsModal() {
-  document.getElementById("logsModal").classList.add("hidden");
-}
+function closeLogsModal() { document.getElementById("logsModal").classList.add("hidden"); }
 function logEvent(email, licenseId, action, success, errorMsg) {
   fetch(SUPABASE_URL + "/rest/v1/license_logs", {
-    method: "POST",
-    headers: sbHeaders(),
-    body: JSON.stringify({
-      license_id: licenseId,
-      email: email,
-      action: action,
-      success: success,
-      error_message: errorMsg
-    })
+    method: "POST", headers: sbHeaders(),
+    body: JSON.stringify({ license_id: licenseId, email: email, action: action, success: success, error_message: errorMsg })
   }).catch(function(){});
 }
 function openCreateModal() {
@@ -678,16 +630,10 @@ function openCreateModal() {
   document.getElementById("newReferredBy").value = "";
   document.getElementById("createModal").classList.remove("hidden");
 }
-function closeCreateModal() {
-  document.getElementById("createModal").classList.add("hidden");
-}
+function closeCreateModal() { document.getElementById("createModal").classList.add("hidden"); }
 function generateCode() {
   var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  function block() {
-    var s = "";
-    for (var i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
-    return s;
-  }
+  function block() { var s = ""; for (var i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)]; return s; }
   return "SPARKAI-" + block() + "-" + block() + "-" + block();
 }
 function createLicense() {
@@ -696,117 +642,69 @@ function createLicense() {
   var payment = document.getElementById("newPayment").value;
   var notes = document.getElementById("newNotes").value.trim();
   var referredBy = document.getElementById("newReferredBy").value.trim().toLowerCase();
-  if (!email || email.indexOf("@") < 0) {
-    alert("Invalid email");
-    return;
-  }
+  if (!email || email.indexOf("@") < 0) { alert("Invalid email"); return; }
   var nowIso = new Date().toISOString();
   var expIso = new Date(Date.now() + WEEK_MS).toISOString();
   fetch(SUPABASE_URL + "/rest/v1/licenses", {
-    method: "POST",
-    headers: sbHeaders({ "Prefer": "return=representation" }),
+    method: "POST", headers: sbHeaders({ "Prefer": "return=representation" }),
     body: JSON.stringify({
-      email: email,
-      code: code,
-      status: "active",
-      paid_amount: 150,
-      payment_method: payment,
-      notes: notes || null,
-      referred_by: referredBy || null,
-      activated_at: null,
-      expires_at: expIso,
-      created_at: nowIso
+      email: email, code: code, status: "active", paid_amount: 150,
+      payment_method: payment, notes: notes || null, referred_by: referredBy || null,
+      activated_at: null, expires_at: expIso, created_at: nowIso
     })
   })
-  .then(function(r){
-    if (!r.ok) return r.text().then(function(t){ throw new Error(t); });
-    return r.json();
-  })
+  .then(function(r){ if (!r.ok) return r.text().then(function(t){ throw new Error(t); }); return r.json(); })
   .then(function(){
     var txt = "Email: " + email + "\nCode: " + code;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(txt).catch(function(){});
-    }
-    if (referredBy && referredBy.indexOf("@") > 0) {
-      rewardReferrer(referredBy, email);
-    } else {
-      alert("License created!\n\nCopied to clipboard:\n\n" + txt);
-      closeCreateModal();
-      loadLicenses();
-    }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(txt).catch(function(){}); }
+    if (referredBy && referredBy.indexOf("@") > 0) { rewardReferrer(referredBy, email); }
+    else { alert("License created!\n\nCopied to clipboard:\n\n" + txt); closeCreateModal(); loadLicenses(); }
   })
   .catch(function(e){ showError("Create failed: " + e.message); });
 }
 function rewardReferrer(referrerEmail, newClientEmail) {
-  fetch(SUPABASE_URL + "/rest/v1/licenses?email=eq." + encodeURIComponent(referrerEmail) + "&select=*", {
-    headers: sbHeaders()
-  })
+  fetch(SUPABASE_URL + "/rest/v1/licenses?email=eq." + encodeURIComponent(referrerEmail) + "&select=*", { headers: sbHeaders() })
   .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
   .then(function(rows){
     if (!rows || rows.length === 0) {
-      alert("⚠️ Cliente creado, PERO no se encontro al referido:\n" + referrerEmail + "\n\nRevisa que el email este bien escrito. No se dio la semana gratis.");
-      closeCreateModal();
-      loadLicenses();
-      return;
+      alert("⚠️ Cliente creado, PERO no se encontro al referido:\n" + referrerEmail + "\n\nRevisa el email. No se dio la semana gratis.");
+      closeCreateModal(); loadLicenses(); return;
     }
     var A = rows[0];
-    var base = (A.expires_at && new Date(A.expires_at).getTime() > Date.now())
-      ? new Date(A.expires_at).getTime()
-      : Date.now();
+    var base = (A.expires_at && new Date(A.expires_at).getTime() > Date.now()) ? new Date(A.expires_at).getTime() : Date.now();
     var newExp = new Date(base + WEEK_MS).toISOString();
     var newCount = (A.referral_count || 0) + 1;
     fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + A.id, {
-      method: "PATCH",
-      headers: sbHeaders({ "Prefer": "return=representation" }),
-      body: JSON.stringify({
-        status: "active",
-        expires_at: newExp,
-        referral_count: newCount
-      })
+      method: "PATCH", headers: sbHeaders({ "Prefer": "return=representation" }),
+      body: JSON.stringify({ status: "active", expires_at: newExp, referral_count: newCount })
     })
     .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
     .then(function(){
       logEvent(A.email, A.id, "referral_reward", true, "Refirio a " + newClientEmail);
       alert("✅ Cliente creado + premio dado!\n\n" + referrerEmail + " gano 1 semana gratis.\nTotal referidos: " + newCount);
-      closeCreateModal();
-      loadLicenses();
+      closeCreateModal(); loadLicenses();
     })
-    .catch(function(e){
-      alert("⚠️ Cliente creado, pero fallo dar la semana al referido: " + e.message);
-      closeCreateModal();
-      loadLicenses();
-    });
+    .catch(function(e){ alert("⚠️ Cliente creado, pero fallo dar la semana: " + e.message); closeCreateModal(); loadLicenses(); });
   })
-  .catch(function(e){
-    alert("⚠️ Cliente creado, pero fallo buscar al referido: " + e.message);
-    closeCreateModal();
-    loadLicenses();
-  });
+  .catch(function(e){ alert("⚠️ Cliente creado, pero fallo buscar al referido: " + e.message); closeCreateModal(); loadLicenses(); });
 }
 function escapeHtml(s) {
-  return String(s || "")
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
-function escapeAttr(s) {
-  return String(s || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-}
+function escapeAttr(s) { return String(s || "").replace(/'/g, "\\'").replace(/"/g, "&quot;"); }
 (function init() {
   try {
     if (sessionStorage.getItem("sparkai_unlocked") === "1") {
       document.getElementById("pinGate").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
       document.getElementById("fabBtn").classList.remove("hidden");
-      startAutoRefresh();
-      return;
+      startAutoRefresh(); return;
     }
   } catch(e){}
   var btn = document.getElementById("pinBtn");
   var input = document.getElementById("pinInput");
   btn.addEventListener("click", checkPin);
-  input.addEventListener("keydown", function(e){
-    if (e.key === "Enter") checkPin();
-  });
+  input.addEventListener("keydown", function(e){ if (e.key === "Enter") checkPin(); });
   input.focus();
 })();
 </script>
