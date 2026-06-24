@@ -28,15 +28,15 @@
   }
   .tagline { color: #94a3b8; margin-bottom: 40px; font-size: 14px; }
   #pinInput {
-    width: 200px; padding: 18px; font-size: 28px; text-align: center; letter-spacing: 12px;
+    width: 280px; max-width: 86vw; padding: 14px; font-size: 14px; text-align: center; letter-spacing: 1px;
     background: #1e293b; border: 2px solid #334155; border-radius: 12px; color: #fff; margin-bottom: 16px; outline: none;
   }
   #pinInput:focus { border-color: #22d3ee; }
   #pinBtn {
-    width: 200px; padding: 14px; background: linear-gradient(135deg, #4ade80, #22d3ee);
+    width: 280px; max-width: 86vw; padding: 14px; background: linear-gradient(135deg, #4ade80, #22d3ee);
     border: none; border-radius: 12px; color: #0a0e1a; font-weight: 700; font-size: 16px; cursor: pointer;
   }
-  #pinError { color: #ef4444; margin-top: 12px; font-size: 14px; min-height: 20px; }
+  #pinError { color: #ef4444; margin-top: 12px; font-size: 14px; min-height: 20px; text-align: center; }
   #app { padding: 16px; max-width: 900px; margin: 0 auto; }
   #app.hidden { display: none; }
   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -91,6 +91,7 @@
   .license-card.expiring { border-left-color: #fbbf24; }
   .license-card.expired { border-left-color: #f59e0b; }
   .license-card.blocked { border-left-color: #ef4444; }
+  .license-card.paused { border-left-color: #94a3b8; }
   .lic-top { display: flex; justify-content: space-between; align-items: center; }
   .lic-email { font-size: 14px; color: #e8eaed; margin-bottom: 4px; word-break: break-all; }
   .lic-code { font-family: "Courier New", monospace; font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
@@ -111,17 +112,22 @@
   .lic-meta span.ref { background: #064e3b; color: #4ade80; font-weight: 700; }
   .lic-meta span.warn { background: #422006; color: #fbbf24; font-weight: 700; }
   .lic-meta span.refby { background: #1e3a8a; color: #93c5fd; }
+  .lic-meta span.paused { background: #334155; color: #cbd5e1; font-weight: 700; }
   .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
   .badge.active { background: #064e3b; color: #4ade80; }
   .badge.expiring { background: #422006; color: #fbbf24; }
   .badge.expired { background: #78350f; color: #fbbf24; }
   .badge.blocked { background: #7f1d1d; color: #fca5a5; }
+  .badge.paused { background: #334155; color: #cbd5e1; }
   .lic-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
   .act-btn { padding: 8px; font-size: 12px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; background: #334155; color: #e8eaed; }
   .act-btn.renew { background: #064e3b; color: #4ade80; }
   .act-btn.block { background: #7f1d1d; color: #fca5a5; }
   .act-btn.unblock { background: #1e3a8a; color: #93c5fd; }
   .act-btn.reset { background: #422006; color: #fbbf24; }
+  .act-btn.pause { background: #422006; color: #fdba74; }
+  .act-btn.resume { background: #064e3b; color: #4ade80; }
+  .act-btn.addtime { background: #1e3a8a; color: #93c5fd; }
   .act-btn.stats { background: #312e81; color: #c7d2fe; grid-column: span 2; }
   .act-btn.delete { background: #450a0a; color: #f87171; grid-column: span 2; }
   .act-btn.logs { background: #1e293b; color: #94a3b8; grid-column: span 2; border: 1px solid #334155; }
@@ -131,6 +137,7 @@
     color: #0a0e1a; font-size: 32px; font-weight: 700; cursor: pointer;
     box-shadow: 0 8px 24px rgba(34, 211, 238, 0.4); z-index: 100;
   }
+  .fab.hidden { display: none; }
   .modal-bg {
     position: fixed; inset: 0; background: rgba(0,0,0,0.7);
     display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
@@ -173,7 +180,7 @@
 <div id="pinGate">
   <div class="logo" translate="no">SparkAI</div>
   <div class="tagline" translate="no">Admin Panel</div>
-  <input type="tel" id="pinInput" maxlength="4" placeholder="PIN" inputmode="numeric" autocomplete="off">
+  <input type="password" id="pinInput" placeholder="Admin Key" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
   <button id="pinBtn" type="button">UNLOCK</button>
   <div id="pinError"></div>
 </div>
@@ -247,8 +254,10 @@
 "use strict";
 var SUPABASE_URL = "https://gqgiiwqillinmunkprdi.supabase.co";
 var SUPABASE_KEY = "sb_publishable_pivFIuIlTP0BbHxOLKCcVA_EPiWGd2D";
-var ADMIN_PIN = "4521";
+var ADMIN_API_URL = SUPABASE_URL + "/functions/v1/admin-api";
+var ADMIN_KEY = "";
 var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+var DAY_MS = 24 * 60 * 60 * 1000;
 var ONLINE_MS = 6 * 60 * 1000;
 var ALERT_DAYS = 2;
 var licenses = [];
@@ -256,24 +265,59 @@ var refreshTimer = null;
 var currentTab = "all";
 var currentSearch = "";
 
+// Todas las llamadas pasan por admin-api con la llave admin real.
+function callAdmin(action, payload) {
+  var body = payload || {};
+  body.action = action;
+  return fetch(ADMIN_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "x-admin-key": ADMIN_KEY },
+    body: JSON.stringify(body)
+  }).then(function(r){
+    if (r.status === 401) { handleUnauthorized(); throw new Error("unauthorized"); }
+    if (!r.ok) return r.text().then(function(t){ throw new Error("HTTP " + r.status + " " + t); });
+    return r.json();
+  });
+}
+
+function handleUnauthorized() {
+  try { sessionStorage.removeItem("sparkai_admin_key"); } catch(e){}
+  ADMIN_KEY = "";
+  if (refreshTimer) clearInterval(refreshTimer);
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("fabBtn").classList.add("hidden");
+  document.getElementById("pinGate").classList.remove("hidden");
+  var err = document.getElementById("pinError");
+  if (err) err.textContent = "Sesión expirada, ingresa la llave de nuevo";
+}
+
 function checkPin() {
   var input = document.getElementById("pinInput");
   var err = document.getElementById("pinError");
   var val = (input.value || "").trim();
-  if (val === ADMIN_PIN) {
-    try { sessionStorage.setItem("sparkai_unlocked", "1"); } catch(e){}
+  if (!val) { err.textContent = "Ingresa la llave"; return; }
+  err.textContent = "Verificando...";
+  ADMIN_KEY = val;
+  callAdmin("list_licenses")
+  .then(function(resp){
+    try { sessionStorage.setItem("sparkai_admin_key", ADMIN_KEY); } catch(e){}
+    err.textContent = "";
     document.getElementById("pinGate").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     document.getElementById("fabBtn").classList.remove("hidden");
-    startAutoRefresh();
-  } else {
-    err.textContent = "Wrong PIN";
-    input.value = "";
-    input.focus();
-  }
+    licenses = resp.licenses || [];
+    render();
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(loadLicenses, 30000);
+  })
+  .catch(function(e){
+    ADMIN_KEY = "";
+    err.textContent = (e.message === "unauthorized") ? "Llave incorrecta" : ("Error: " + e.message);
+    input.value = ""; input.focus();
+  });
 }
 function logout() {
-  try { sessionStorage.removeItem("sparkai_unlocked"); } catch(e){}
+  try { sessionStorage.removeItem("sparkai_admin_key"); } catch(e){}
   if (refreshTimer) clearInterval(refreshTimer);
   location.reload();
 }
@@ -282,21 +326,16 @@ function startAutoRefresh() {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(loadLicenses, 30000);
 }
-function sbHeaders(extra) {
-  var h = { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json" };
-  if (extra) for (var k in extra) h[k] = extra[k];
-  return h;
-}
 function showError(msg) {
   var el = document.getElementById("errorBanner");
   el.textContent = msg; el.classList.remove("hidden");
   setTimeout(function(){ el.classList.add("hidden"); }, 5000);
 }
 function loadLicenses() {
-  fetch(SUPABASE_URL + "/rest/v1/licenses?select=*&order=created_at.desc", { headers: sbHeaders() })
-  .then(function(r){ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-  .then(function(data){ licenses = data || []; render(); })
+  callAdmin("list_licenses")
+  .then(function(resp){ licenses = resp.licenses || []; render(); })
   .catch(function(e){
+    if (e.message === "unauthorized") return;
     showError("Load failed: " + e.message);
     document.getElementById("loading").textContent = "Failed to load. Check connection.";
   });
@@ -306,6 +345,7 @@ function isOnline(L, now) {
   return (now - new Date(L.last_seen).getTime()) < ONLINE_MS;
 }
 function effectiveStatus(L, now) {
+  if (L.paused) return "paused";
   var s = L.status || "unknown";
   if (s === "active") {
     var exp = L.expires_at ? new Date(L.expires_at).getTime() : 0;
@@ -313,6 +353,21 @@ function effectiveStatus(L, now) {
     return "active";
   }
   return s;
+}
+function remainingMsOf(L, now) {
+  if (L.paused) return Number(L.remaining_ms || 0);
+  if (!L.expires_at) return null;
+  return new Date(L.expires_at).getTime() - now;
+}
+function fmtDuration(ms) {
+  if (ms == null) return "—";
+  if (ms < 0) ms = 0;
+  var d = Math.floor(ms / 86400000);
+  var h = Math.floor((ms % 86400000) / 3600000);
+  var m = Math.floor((ms % 3600000) / 60000);
+  if (d > 0) return d + "d " + h + "h";
+  if (h > 0) return h + "h " + m + "m";
+  return m + "m";
 }
 function daysLeftNum(L, now) {
   if (!L.expires_at) return null;
@@ -325,6 +380,7 @@ function isExpiringSoon(L, now) {
 }
 function sortKey(L, now) {
   if (effectiveStatus(L, now) === "blocked") return 9e15;
+  if (effectiveStatus(L, now) === "paused") return 8.5e15;
   if (!L.expires_at) return 8e15;
   return new Date(L.expires_at).getTime();
 }
@@ -406,15 +462,17 @@ function renderCard(L, now) {
   var statusClass = es;
   if (expiring) statusClass = "active expiring";
   var badgeClass = expiring ? "expiring" : es;
-  var badgeText = expiring ? "vence pronto" : es;
+  var badgeText = expiring ? "vence pronto" : (es === "paused" ? "en pausa" : es);
 
-  var dnum = daysLeftNum(L, now);
+  var remMs = remainingMsOf(L, now);
   var daysHtml = "";
-  if (es === "active") {
-    var dtxt = (dnum !== null) ? (Math.max(0, dnum) + "d left") : "";
+  if (es === "paused") {
+    daysHtml = '<span class="paused">⏸ En pausa · ' + fmtDuration(remMs) + '</span>';
+  } else if (es === "active") {
+    var dnum = daysLeftNum(L, now);
     daysHtml = expiring
       ? '<span class="warn">⏰ ' + (dnum <= 0 ? "vence hoy" : "vence en " + dnum + "d") + '</span>'
-      : '<span>' + dtxt + '</span>';
+      : '<span>' + fmtDuration(remMs) + ' left</span>';
   } else if (es === "expired") { daysHtml = '<span class="warn">Expired</span>'; }
   else if (es === "blocked") { daysHtml = '<span>Blocked</span>'; }
 
@@ -432,8 +490,15 @@ function renderCard(L, now) {
   var actions = "";
   if (es === "blocked") {
     actions += '<button class="act-btn unblock" onclick="unblockLicense(\'' + L.id + '\')">Unblock</button>';
+    actions += '<button class="act-btn addtime" onclick="addTime(\'' + L.id + '\')">➕ Tiempo</button>';
+  } else if (es === "paused") {
+    actions += '<button class="act-btn resume" onclick="resumeLicense(\'' + L.id + '\')">▶ Reanudar</button>';
+    actions += '<button class="act-btn addtime" onclick="addTime(\'' + L.id + '\')">➕ Tiempo</button>';
+    actions += '<button class="act-btn block" onclick="blockLicense(\'' + L.id + '\')">Block</button>';
   } else {
     actions += '<button class="act-btn renew" onclick="renewLicense(\'' + L.id + '\')">Renew +$40</button>';
+    actions += '<button class="act-btn pause" onclick="pauseLicense(\'' + L.id + '\')">⏸ Pausar</button>';
+    actions += '<button class="act-btn addtime" onclick="addTime(\'' + L.id + '\')">➕ Tiempo</button>';
     actions += '<button class="act-btn block" onclick="blockLicense(\'' + L.id + '\')">Block</button>';
   }
   if (L.device_id) {
@@ -477,11 +542,9 @@ function viewStats(email) {
   document.getElementById("statsModal").classList.remove("hidden");
   document.getElementById("statsTitle").textContent = email;
   document.getElementById("statsBody").innerHTML = "Loading...";
-  var ordersUrl = SUPABASE_URL + "/rest/v1/order_logs?email=eq." + encodeURIComponent(email) + "&order=created_at.desc&limit=300";
-  var sessUrl = SUPABASE_URL + "/rest/v1/bot_sessions?email=eq." + encodeURIComponent(email) + "&order=started_at.desc&limit=300";
   Promise.all([
-    fetch(ordersUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }),
-    fetch(sessUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; })
+    callAdmin("get_orders", { email: email }).then(function(r){ return r.orders || []; }).catch(function(){ return []; }),
+    callAdmin("get_sessions", { email: email }).then(function(r){ return r.sessions || []; }).catch(function(){ return []; })
   ]).then(function(res){
     renderStats(res[0] || [], res[1] || []);
   }).catch(function(e){
@@ -547,66 +610,73 @@ function sbox(num, label) {
 function closeStatsModal() { document.getElementById("statsModal").classList.add("hidden"); }
 
 function renewLicense(id) {
-  if (!confirm("Renew this license for +7 days and $40?")) return;
+  if (!confirm("Renovar esta licencia +7 días y +$40?")) return;
   var L = licenses.find(function(x){ return x.id === id; });
-  if (!L) return;
-  var base = (L.expires_at && new Date(L.expires_at).getTime() > Date.now()) ? new Date(L.expires_at).getTime() : Date.now();
-  var newExp = new Date(base + WEEK_MS).toISOString();
-  var newPaid = (L.paid_amount || 0) + 40;
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, {
-    method: "PATCH", headers: sbHeaders({ "Prefer": "return=representation" }),
-    body: JSON.stringify({ status: "active", expires_at: newExp, paid_amount: newPaid })
-  })
-  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-  .then(function(){ logEvent(L.email, L.id, "renew", true, null); loadLicenses(); })
-  .catch(function(e){ showError("Renew failed: " + e.message); });
+  var newPaid = ((L && L.paid_amount) || 0) + 40;
+  callAdmin("extend_license", { id: id, addMs: WEEK_MS, paidAmount: newPaid })
+  .then(function(){ loadLicenses(); })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Renew failed: " + e.message); });
 }
 function blockLicense(id) {
-  if (!confirm("Block this client? The app will sign out within 30 min.")) return;
-  var L = licenses.find(function(x){ return x.id === id; });
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ status: "blocked" }) })
-  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
-  .then(function(){ if(L) logEvent(L.email, L.id, "blocked_by_admin", true, null); loadLicenses(); })
-  .catch(function(e){ showError("Block failed: " + e.message); });
+  if (!confirm("Bloquear este cliente? La app cerrará sesión en ≤30 min.")) return;
+  callAdmin("block_license", { id: id })
+  .then(function(){ loadLicenses(); })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Block failed: " + e.message); });
 }
 function unblockLicense(id) {
-  if (!confirm("Unblock this license?")) return;
-  var L = licenses.find(function(x){ return x.id === id; });
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ status: "active" }) })
-  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
-  .then(function(){ if(L) logEvent(L.email, L.id, "unblocked_by_admin", true, null); loadLicenses(); })
-  .catch(function(e){ showError("Unblock failed: " + e.message); });
+  if (!confirm("Desbloquear esta licencia?")) return;
+  callAdmin("unblock_license", { id: id })
+  .then(function(){ loadLicenses(); })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Unblock failed: " + e.message); });
 }
 function resetDevice(id) {
-  if (!confirm("Reset device binding? Client can re-activate on a new device.")) return;
-  var L = licenses.find(function(x){ return x.id === id; });
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ device_id: null, device_name: null }) })
-  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
-  .then(function(){ if(L) logEvent(L.email, L.id, "device_reset", true, null); loadLicenses(); })
-  .catch(function(e){ showError("Reset failed: " + e.message); });
+  if (!confirm("Resetear dispositivo? El cliente podrá activar en otro equipo.")) return;
+  callAdmin("reset_device", { id: id })
+  .then(function(){ loadLicenses(); })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Reset failed: " + e.message); });
 }
 function deleteLicense(id, email) {
-  if (!confirm("DELETE license for " + email + "?\n\nTIP: Prefer BLOCK over DELETE.")) return;
-  if (!confirm("Are you SURE? This cannot be undone.")) return;
-  fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + id, { method: "DELETE", headers: sbHeaders() })
-  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); })
+  if (!confirm("BORRAR licencia de " + email + "?\n\nTIP: Mejor BLOQUEAR que BORRAR.")) return;
+  if (!confirm("¿Seguro? Esto no se puede deshacer.")) return;
+  callAdmin("delete_license", { id: id })
   .then(function(){ loadLicenses(); })
-  .catch(function(e){ showError("Delete failed: " + e.message); });
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Delete failed: " + e.message); });
+}
+function pauseLicense(id) {
+  if (!confirm("Pausar el tiempo de este cliente?\nSe congela el reloj y el bot se bloquea hasta que reanudes.")) return;
+  callAdmin("pause_license", { id: id })
+  .then(function(){ loadLicenses(); })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Pause failed: " + e.message); });
+}
+function resumeLicense(id) {
+  if (!confirm("Reanudar el tiempo? El reloj sigue desde donde quedó.")) return;
+  callAdmin("resume_license", { id: id })
+  .then(function(){ loadLicenses(); })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Resume failed: " + e.message); });
+}
+function addTime(id) {
+  var v = prompt("¿Cuántos días agregar? (puedes usar decimales, ej. 0.5 = 12h)");
+  if (v === null) return;
+  var days = parseFloat(v);
+  if (isNaN(days) || days <= 0) { alert("Número inválido"); return; }
+  var addMs = Math.round(days * DAY_MS);
+  callAdmin("add_time", { id: id, addMs: addMs })
+  .then(function(){ loadLicenses(); })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Add time failed: " + e.message); });
 }
 function viewLogs(email) {
   document.getElementById("logsModal").classList.remove("hidden");
   document.getElementById("logsList").innerHTML = "Loading...";
-  fetch(SUPABASE_URL + "/rest/v1/license_logs?email=eq." + encodeURIComponent(email) + "&order=created_at.desc&limit=50", { headers: sbHeaders() })
-  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-  .then(function(logs){
-    if (!logs || logs.length === 0) { document.getElementById("logsList").innerHTML = '<div class="empty">No logs yet</div>'; return; }
+  callAdmin("get_logs", { email: email })
+  .then(function(resp){
+    var logs = resp.logs || [];
+    if (logs.length === 0) { document.getElementById("logsList").innerHTML = '<div class="empty">No logs yet</div>'; return; }
     var html = "";
     for (var i = 0; i < logs.length; i++) {
       var lg = logs[i];
       var cls = lg.success ? "success" : "fail";
       html += '<div class="log-entry ' + cls + '">';
       html += '<div class="log-action">' + escapeHtml(lg.action || "") + '</div>';
-      if (lg.device_name) html += '<div class="log-detail">' + escapeHtml(lg.device_name) + '</div>';
       if (lg.error_message) html += '<div class="log-detail">Error: ' + escapeHtml(lg.error_message) + '</div>';
       html += '<div class="log-time">' + new Date(lg.created_at).toLocaleString() + '</div>';
       html += '</div>';
@@ -616,12 +686,6 @@ function viewLogs(email) {
   .catch(function(e){ document.getElementById("logsList").innerHTML = '<div class="empty">Load failed: ' + e.message + '</div>'; });
 }
 function closeLogsModal() { document.getElementById("logsModal").classList.add("hidden"); }
-function logEvent(email, licenseId, action, success, errorMsg) {
-  fetch(SUPABASE_URL + "/rest/v1/license_logs", {
-    method: "POST", headers: sbHeaders(),
-    body: JSON.stringify({ license_id: licenseId, email: email, action: action, success: success, error_message: errorMsg })
-  }).catch(function(){});
-}
 function openCreateModal() {
   document.getElementById("newEmail").value = "";
   document.getElementById("newCode").value = generateCode();
@@ -643,50 +707,29 @@ function createLicense() {
   var notes = document.getElementById("newNotes").value.trim();
   var referredBy = document.getElementById("newReferredBy").value.trim().toLowerCase();
   if (!email || email.indexOf("@") < 0) { alert("Invalid email"); return; }
-  var nowIso = new Date().toISOString();
   var expIso = new Date(Date.now() + WEEK_MS).toISOString();
-  fetch(SUPABASE_URL + "/rest/v1/licenses", {
-    method: "POST", headers: sbHeaders({ "Prefer": "return=representation" }),
-    body: JSON.stringify({
-      email: email, code: code, status: "active", paid_amount: 150,
-      payment_method: payment, notes: notes || null, referred_by: referredBy || null,
-      activated_at: null, expires_at: expIso, created_at: nowIso
-    })
+  callAdmin("create_license", {
+    email: email, code: code, paidAmount: 150,
+    paymentMethod: payment, notes: notes || null, referredBy: referredBy || null,
+    expiresAt: expIso
   })
-  .then(function(r){ if (!r.ok) return r.text().then(function(t){ throw new Error(t); }); return r.json(); })
   .then(function(){
     var txt = "Email: " + email + "\nCode: " + code;
     if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(txt).catch(function(){}); }
-    if (referredBy && referredBy.indexOf("@") > 0) { rewardReferrer(referredBy, email); }
-    else { alert("License created!\n\nCopied to clipboard:\n\n" + txt); closeCreateModal(); loadLicenses(); }
+    if (referredBy && referredBy.indexOf("@") > 0) {
+      callAdmin("apply_referral", { referrerEmail: referredBy, addMs: WEEK_MS })
+      .then(function(rr){
+        if (rr.referrerFound) { alert("✅ Cliente creado + premio!\n\n" + referredBy + " ganó 1 semana gratis."); }
+        else { alert("⚠️ Cliente creado, PERO no se encontró al referido:\n" + referredBy + "\n\nRevisa el email. No se dio la semana gratis."); }
+        closeCreateModal(); loadLicenses();
+      })
+      .catch(function(e){ alert("⚠️ Cliente creado, pero falló dar la semana: " + e.message); closeCreateModal(); loadLicenses(); });
+    } else {
+      alert("License created!\n\nCopiado al portapapeles:\n\n" + txt);
+      closeCreateModal(); loadLicenses();
+    }
   })
   .catch(function(e){ showError("Create failed: " + e.message); });
-}
-function rewardReferrer(referrerEmail, newClientEmail) {
-  fetch(SUPABASE_URL + "/rest/v1/licenses?email=eq." + encodeURIComponent(referrerEmail) + "&select=*", { headers: sbHeaders() })
-  .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-  .then(function(rows){
-    if (!rows || rows.length === 0) {
-      alert("⚠️ Cliente creado, PERO no se encontro al referido:\n" + referrerEmail + "\n\nRevisa el email. No se dio la semana gratis.");
-      closeCreateModal(); loadLicenses(); return;
-    }
-    var A = rows[0];
-    var base = (A.expires_at && new Date(A.expires_at).getTime() > Date.now()) ? new Date(A.expires_at).getTime() : Date.now();
-    var newExp = new Date(base + WEEK_MS).toISOString();
-    var newCount = (A.referral_count || 0) + 1;
-    fetch(SUPABASE_URL + "/rest/v1/licenses?id=eq." + A.id, {
-      method: "PATCH", headers: sbHeaders({ "Prefer": "return=representation" }),
-      body: JSON.stringify({ status: "active", expires_at: newExp, referral_count: newCount })
-    })
-    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-    .then(function(){
-      logEvent(A.email, A.id, "referral_reward", true, "Refirio a " + newClientEmail);
-      alert("✅ Cliente creado + premio dado!\n\n" + referrerEmail + " gano 1 semana gratis.\nTotal referidos: " + newCount);
-      closeCreateModal(); loadLicenses();
-    })
-    .catch(function(e){ alert("⚠️ Cliente creado, pero fallo dar la semana: " + e.message); closeCreateModal(); loadLicenses(); });
-  })
-  .catch(function(e){ alert("⚠️ Cliente creado, pero fallo buscar al referido: " + e.message); closeCreateModal(); loadLicenses(); });
 }
 function escapeHtml(s) {
   return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -694,11 +737,14 @@ function escapeHtml(s) {
 function escapeAttr(s) { return String(s || "").replace(/'/g, "\\'").replace(/"/g, "&quot;"); }
 (function init() {
   try {
-    if (sessionStorage.getItem("sparkai_unlocked") === "1") {
+    var k = sessionStorage.getItem("sparkai_admin_key");
+    if (k) {
+      ADMIN_KEY = k;
       document.getElementById("pinGate").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
       document.getElementById("fabBtn").classList.remove("hidden");
-      startAutoRefresh(); return;
+      startAutoRefresh();
+      return;
     }
   } catch(e){}
   var btn = document.getElementById("pinBtn");
