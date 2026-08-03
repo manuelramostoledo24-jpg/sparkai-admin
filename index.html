@@ -58,6 +58,22 @@
   .stat.soon .stat-num { color: #fbbf24; }
   .stat.expired .stat-num { color: #f59e0b; }
   .stat.blocked .stat-num { color: #ef4444; }
+  /* v2 (fase 1): pausados, inactivos e ingresos. El de dinero lleva letra mas
+     chica porque "$19,580" no cabe a 22px en una columna de un tercio. */
+  .stat.paused2 .stat-num { color: #cbd5e1; }
+  .stat.idle .stat-num { color: #f97316; }
+  .stat.money .stat-num { color: #4ade80; font-size: 17px; }
+  /* Barra de herramientas: ordenar + exportar. */
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .toolbar select {
+    flex: 1; padding: 10px; background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; color: #e8eaed; font-size: 13px; outline: none;
+  }
+  .toolbar button {
+    padding: 10px 14px; background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; color: #4ade80; font-size: 13px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+  }
   .alert-banner {
     background: #422006; color: #fbbf24; padding: 12px; border-radius: 8px;
     margin-bottom: 12px; font-size: 13px; font-weight: 700; border: 1px solid #a16207;
@@ -113,6 +129,16 @@
   .lic-meta span.warn { background: #422006; color: #fbbf24; font-weight: 700; }
   .lic-meta span.refby { background: #1e3a8a; color: #93c5fd; }
   .lic-meta span.paused { background: #334155; color: #cbd5e1; font-weight: 700; }
+  /* v2 (fase 1): datos que el backend ya mandaba y la tarjeta no dibujaba. */
+  .lic-meta span.pay { background: #1e3a8a; color: #93c5fd; }
+  .lic-meta span.dev { background: #0f172a; color: #64748b; font-family: "Courier New", monospace; }
+  .lic-meta span.amb { background: #064e3b; color: #4ade80; font-weight: 700; }
+  .lic-meta span.ambno { background: #422006; color: #fbbf24; font-weight: 700; }
+  .lic-meta span.idle { background: #431407; color: #fb923c; font-weight: 700; }
+  .lic-notes {
+    font-size: 11px; color: #cbd5e1; background: #0f172a; border-left: 3px solid #475569;
+    padding: 6px 8px; border-radius: 6px; margin-bottom: 8px; word-break: break-word;
+  }
   .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
   .badge.active { background: #064e3b; color: #4ade80; }
   .badge.expiring { background: #422006; color: #fbbf24; }
@@ -198,14 +224,29 @@
     <div class="stat soon"><div class="stat-num" id="statSoon">0</div><div class="stat-label">Por vencer</div></div>
     <div class="stat expired"><div class="stat-num" id="statExpired">0</div><div class="stat-label">Expired</div></div>
     <div class="stat blocked"><div class="stat-num" id="statBlocked">0</div><div class="stat-label">Blocked</div></div>
+    <div class="stat paused2"><div class="stat-num" id="statPaused">0</div><div class="stat-label">En pausa</div></div>
+    <div class="stat idle"><div class="stat-num" id="statIdle">0</div><div class="stat-label">Sin señal 3d+</div></div>
+    <div class="stat money"><div class="stat-num" id="statMoney">$0</div><div class="stat-label">Cobrado total</div></div>
   </div>
   <div id="topRef" class="top-ref hidden"></div>
-  <input id="searchBox" type="text" placeholder="🔍 Buscar por email o código" autocomplete="off" oninput="onSearch(this.value)">
+  <input id="searchBox" type="text" placeholder="🔍 Buscar por email, código, nota o dispositivo" autocomplete="off" oninput="onSearch(this.value)">
+  <div class="toolbar">
+    <select id="sortSel" onchange="onSort(this.value)">
+      <option value="expiry">Ordenar: vence primero</option>
+      <option value="idle">Ordenar: más tiempo sin señal</option>
+      <option value="paid">Ordenar: más ha pagado</option>
+      <option value="newest">Ordenar: más recientes</option>
+      <option value="email">Ordenar: email A-Z</option>
+    </select>
+    <button type="button" onclick="exportCsv()">⬇ CSV</button>
+  </div>
   <div class="tabs" id="tabs">
     <div class="tab active" data-tab="all" onclick="setTab('all')">Todos</div>
     <div class="tab" data-tab="active" onclick="setTab('active')">Activos</div>
     <div class="tab" data-tab="expired" onclick="setTab('expired')">Expirados</div>
     <div class="tab" data-tab="blocked" onclick="setTab('blocked')">Bloqueados</div>
+    <div class="tab" data-tab="paused" onclick="setTab('paused')">En pausa</div>
+    <div class="tab" data-tab="idle" onclick="setTab('idle')">Sin señal</div>
   </div>
   <div id="loading">Loading licenses...</div>
   <div id="licensesList"></div>
@@ -260,10 +301,18 @@ var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 var DAY_MS = 24 * 60 * 60 * 1000;
 var ONLINE_MS = 6 * 60 * 1000;
 var ALERT_DAYS = 2;
+// Un cliente cuenta como "sin señal" si su last_seen tiene mas de 3 dias.
+// OJO: last_seen lo actualiza el latido de la app, o sea que mide "abrio la
+// app", NO "capturo ordenes". Saber quien capturo de verdad necesita
+// order_logs, que hoy solo se puede pedir cliente por cliente (eso es fase 2).
+var IDLE_DAYS = 3;
+// Tope para una sesion que quedo abierta: ver el comentario de renderStats.
+var OPEN_SESSION_CAP_MS = 8 * 60 * 60 * 1000;
 var licenses = [];
 var refreshTimer = null;
 var currentTab = "all";
 var currentSearch = "";
+var currentSort = "expiry";
 
 // Todas las llamadas pasan por admin-api con la llave admin real.
 function callAdmin(action, payload) {
@@ -384,15 +433,52 @@ function sortKey(L, now) {
   if (!L.expires_at) return 8e15;
   return new Date(L.expires_at).getTime();
 }
+// Milisegundos desde la ultima señal. Sin last_seen devuelve Infinity para que
+// "nunca se conecto" quede arriba de todo al ordenar por inactividad.
+function idleMsOf(L, now) {
+  if (!L.last_seen) return Infinity;
+  return now - new Date(L.last_seen).getTime();
+}
+function isIdle(L, now) {
+  return idleMsOf(L, now) > IDLE_DAYS * DAY_MS;
+}
+function fmtDate(v) {
+  if (!v) return "—";
+  var d = new Date(v);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString();
+}
+// Compara segun el orden elegido en la barra de herramientas.
+function cmpBy(mode, now) {
+  return function(a, b) {
+    if (mode === "idle") {
+      var ia = idleMsOf(a, now), ib = idleMsOf(b, now);
+      if (ia === ib) return 0;
+      return ib - ia; // mas inactivo primero
+    }
+    if (mode === "paid") return (Number(b.paid_amount) || 0) - (Number(a.paid_amount) || 0);
+    if (mode === "newest") {
+      var ca = a.created_at ? new Date(a.created_at).getTime() : 0;
+      var cb = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return cb - ca;
+    }
+    if (mode === "email") return String(a.email || "").localeCompare(String(b.email || ""));
+    return sortKey(a, now) - sortKey(b, now); // "expiry": el de siempre
+  };
+}
 function render() {
   document.getElementById("loading").style.display = "none";
   var now = Date.now();
   var total = licenses.length, active = 0, expired = 0, blocked = 0, online = 0, soon = 0;
+  var paused = 0, idle = 0, money = 0;
   for (var i = 0; i < licenses.length; i++) {
     var L = licenses[i];
     if (isOnline(L, now)) online++;
+    if (isIdle(L, now)) idle++;
+    money += Number(L.paid_amount) || 0;
     var es = effectiveStatus(L, now);
     if (es === "blocked") blocked++;
+    else if (es === "paused") paused++;
     else if (es === "expired") expired++;
     else if (es === "active") { active++; if (isExpiringSoon(L, now)) soon++; }
   }
@@ -402,6 +488,9 @@ function render() {
   document.getElementById("statSoon").textContent = soon;
   document.getElementById("statExpired").textContent = expired;
   document.getElementById("statBlocked").textContent = blocked;
+  document.getElementById("statPaused").textContent = paused;
+  document.getElementById("statIdle").textContent = idle;
+  document.getElementById("statMoney").textContent = "$" + money.toLocaleString("en-US");
 
   var alertEl = document.getElementById("alertBanner");
   if (soon > 0) {
@@ -418,14 +507,23 @@ function render() {
     if (currentTab === "active" && st !== "active") continue;
     if (currentTab === "expired" && st !== "expired") continue;
     if (currentTab === "blocked" && st !== "blocked") continue;
+    if (currentTab === "paused" && st !== "paused") continue;
+    if (currentTab === "idle" && !isIdle(lic, now)) continue;
     if (currentSearch) {
+      // La busqueda ahora tambien mira notas, dispositivo y metodo de pago, que
+      // son campos que la tarjeta ya muestra desde esta version.
       var em = (lic.email || "").toLowerCase();
       var cd = (lic.code || "").toLowerCase();
-      if (em.indexOf(currentSearch) < 0 && cd.indexOf(currentSearch) < 0) continue;
+      var nt = (lic.notes || "").toLowerCase();
+      var dv = ((lic.device_name || "") + " " + (lic.device_id || "")).toLowerCase();
+      var pm = (lic.payment_method || "").toLowerCase();
+      if (em.indexOf(currentSearch) < 0 && cd.indexOf(currentSearch) < 0 &&
+          nt.indexOf(currentSearch) < 0 && dv.indexOf(currentSearch) < 0 &&
+          pm.indexOf(currentSearch) < 0) continue;
     }
     filtered.push(lic);
   }
-  filtered.sort(function(a, b){ return sortKey(a, now) - sortKey(b, now); });
+  filtered.sort(cmpBy(currentSort, now));
 
   var list = document.getElementById("licensesList");
   if (filtered.length === 0) { list.innerHTML = '<div class="empty">No hay clientes en esta vista.</div>'; return; }
@@ -487,6 +585,39 @@ function renderCard(L, now) {
   var refHtml = refCount > 0 ? '<span class="ref">🎁 ' + refCount + ' ref</span>' : '';
   var refByHtml = L.referred_by ? '<span class="refby">Ref. por: ' + escapeHtml(L.referred_by) + '</span>' : '';
 
+  // ===== v2 (fase 1): datos que list_licenses ya devolvia y la tarjeta tiraba =====
+  // Metodo de pago.
+  var payHtml = L.payment_method ? '<span class="pay">💳 ' + escapeHtml(L.payment_method) + '</span>' : '';
+  // Fecha de activacion (cuando el cliente ligo su telefono) y fecha exacta de
+  // vencimiento. Antes solo se veia "3d 4h left", que no sirve para cobrar.
+  var actHtml = L.activated_at ? '<span>Activó: ' + fmtDate(L.activated_at) + '</span>' : '';
+  var expHtml = L.expires_at ? '<span>Vence: ' + fmtDate(L.expires_at) + '</span>' : '';
+  // Id del dispositivo, recortado para que quepa. El valor completo queda en el
+  // title, asi se puede ver al pasar el dedo/mouse encima sin romper el diseño.
+  var devIdHtml = "";
+  if (L.device_id) {
+    var did = String(L.device_id);
+    devIdHtml = '<span class="dev" title="' + escapeHtml(did) + '">ID ' + escapeHtml(did.slice(0, 8)) + '…</span>';
+  }
+  // Embajador: solo tiene sentido mostrarlo si el cliente refirio a alguien.
+  var ambHtml = "";
+  if (refCount > 0) {
+    ambHtml = L.ambassador_paid
+      ? '<span class="amb">🏅 Premio pagado</span>'
+      : '<span class="ambno">🏅 Premio SIN pagar</span>';
+  }
+  // Aviso de inactividad: pago, pero hace dias que no da señal.
+  // Sin last_seen, idleMsOf devuelve Infinity: hay que decir "nunca", no un numero.
+  var idleHtml = "";
+  if (isIdle(L, now)) {
+    var idms = idleMsOf(L, now);
+    idleHtml = isFinite(idms)
+      ? '<span class="idle">📵 sin señal ' + Math.floor(idms / DAY_MS) + 'd</span>'
+      : '<span class="idle">📵 nunca se conectó</span>';
+  }
+  // Nota libre, en su propia linea porque puede ser larga.
+  var notesHtml = L.notes ? '<div class="lic-notes">📝 ' + escapeHtml(L.notes) + '</div>' : '';
+
   var actions = "";
   if (es === "blocked") {
     actions += '<button class="act-btn unblock" onclick="unblockLicense(\'' + L.id + '\')">Unblock</button>';
@@ -514,13 +645,18 @@ function renderCard(L, now) {
         '<div class="lic-email">' + escapeHtml(L.email || "") + '</div>' + liveHtml +
       '</div>' +
       '<div class="lic-code">' + escapeHtml(L.code || "") + '</div>' +
+      notesHtml +
       '<div class="lic-meta">' +
         '<span class="badge ' + badgeClass + '">' + badgeText + '</span>' +
         daysHtml +
+        idleHtml +
         '<span>$' + paid + '</span>' +
+        payHtml +
         '<span>' + escapeHtml(device) + '</span>' +
+        devIdHtml +
         '<span>Created: ' + created + '</span>' +
-        refHtml + refByHtml +
+        actHtml + expHtml +
+        refHtml + refByHtml + ambHtml +
       '</div>' +
       '<div class="lic-actions">' + actions + '</div>' +
     '</div>'
@@ -536,6 +672,58 @@ function setTab(t) {
   render();
 }
 function onSearch(v) { currentSearch = (v || "").trim().toLowerCase(); render(); }
+function onSort(v) { currentSort = v || "expiry"; render(); }
+
+// ===== EXPORTAR CSV (fase 1) =====
+// Se arma en el navegador con lo que ya esta cargado: no pega ni una llamada
+// mas al servidor. Exporta TODOS los clientes, no solo la pestaña que se ve,
+// porque el CSV es para contabilidad, no para la vista de turno.
+function csvCell(v) {
+  var s = (v === null || v === undefined) ? "" : String(v);
+  // Comillas dobles adentro se duplican; si hay coma, comilla o salto de linea
+  // hay que envolver toda la celda. Un email que empiece con = seria formula en
+  // Excel, asi que se le pone un apostrofe delante.
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  if (/[",\n\r]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function exportCsv() {
+  var now = Date.now();
+  var cols = ["email","codigo","estado","vence","dias_restantes","ultima_senal","dias_sin_senal",
+              "pagado_usd","metodo_pago","dispositivo","device_id","activado","creado",
+              "referidos","referido_por","premio_pagado","pausado","notas"];
+  var rows = [cols.join(",")];
+  var ordered = licenses.slice().sort(cmpBy(currentSort, now));
+  for (var i = 0; i < ordered.length; i++) {
+    var L = ordered[i];
+    var idms = idleMsOf(L, now);
+    var dl = daysLeftNum(L, now);
+    rows.push([
+      csvCell(L.email), csvCell(L.code), csvCell(effectiveStatus(L, now)),
+      csvCell(L.expires_at ? new Date(L.expires_at).toISOString() : ""),
+      csvCell(dl === null ? "" : dl),
+      csvCell(L.last_seen ? new Date(L.last_seen).toISOString() : ""),
+      csvCell(isFinite(idms) ? Math.floor(idms / DAY_MS) : ""),
+      csvCell(Number(L.paid_amount) || 0), csvCell(L.payment_method),
+      csvCell(L.device_name), csvCell(L.device_id),
+      csvCell(L.activated_at ? new Date(L.activated_at).toISOString() : ""),
+      csvCell(L.created_at ? new Date(L.created_at).toISOString() : ""),
+      csvCell(L.referral_count || 0), csvCell(L.referred_by),
+      csvCell(L.ambassador_paid ? "si" : "no"), csvCell(L.paused ? "si" : "no"),
+      csvCell(L.notes)
+    ].join(","));
+  }
+  // El ﻿ del principio es para que Excel abra los acentos bien.
+  var blob = new Blob(["﻿" + rows.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "sparkai-clientes-" + new Date().toISOString().slice(0, 10) + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
 
 // ===== STATS POR CLIENTE =====
 function viewStats(email) {
@@ -567,12 +755,32 @@ function renderStats(orders, sessions) {
     avgGap = Math.round((sum / (times.length - 1)) / 60000) + " min";
   }
 
-  var activeMs = 0;
+  // ===== BOT ACTIVO (arreglado en fase 1) =====
+  // Antes solo se sumaban las sesiones con started_at Y ended_at. En la base hay
+  // 323 sesiones sin cerrar (la app murio sin avisar), y todas contaban como 0
+  // minutos: el uso real salia por debajo.
+  // Ahora:
+  //   - sesion cerrada          -> se suma su duracion real.
+  //   - sesion abierta reciente -> se suma (ahora - inicio), topeado a 8 h.
+  //   - sesion abierta vieja    -> NO se inventa tiempo: se cuenta aparte.
+  // El tope de 8 h existe porque una sesion colgada de hace meses sumaria miles
+  // de horas. 8 h esta muy por encima del percentil 95 real (1 h 32 min), asi
+  // que no recorta sesiones normales.
+  var activeMs = 0, colgadas = 0, ahora = Date.now();
   for (var s = 0; s < sessions.length; s++) {
     var se = sessions[s];
-    if (se.started_at && se.ended_at) {
-      activeMs += new Date(se.ended_at).getTime() - new Date(se.started_at).getTime();
+    if (!se.started_at) continue;
+    var ini = new Date(se.started_at).getTime();
+    if (isNaN(ini)) continue;
+    if (se.ended_at) {
+      var fin = new Date(se.ended_at).getTime();
+      // Una fila con fin antes del inicio restaria tiempo: se ignora.
+      if (!isNaN(fin) && fin > ini) activeMs += (fin - ini);
+      continue;
     }
+    var corriendo = ahora - ini;
+    if (corriendo > 0 && corriendo <= OPEN_SESSION_CAP_MS) activeMs += corriendo;
+    else colgadas++;
   }
   var activeH = Math.floor(activeMs / 3600000);
   var activeM = Math.floor((activeMs % 3600000) / 60000);
@@ -587,7 +795,15 @@ function renderStats(orders, sessions) {
   html += sbox(activeH + "h " + activeM + "m", "Bot activo");
   html += sbox(sessions.length, "Sesiones");
   html += '</div>';
-  html += '<div style="font-size:11px;color:#94a3b8;margin:8px 0 12px;">Última orden: ' + lastOrder + '</div>';
+  html += '<div style="font-size:11px;color:#94a3b8;margin:8px 0 4px;">Última orden: ' + lastOrder + '</div>';
+  // Se avisa cuando hay sesiones colgadas para que el numero de arriba no se lea
+  // como si fuera exacto: son sesiones que nunca mandaron su cierre.
+  if (colgadas > 0) {
+    html += '<div style="font-size:10px;color:#fb923c;margin-bottom:12px;">⚠️ ' + colgadas +
+            ' sesión(es) quedaron sin cerrar (la app se cerró de golpe). No se les cuenta tiempo.</div>';
+  } else {
+    html += '<div style="margin-bottom:12px;"></div>';
+  }
   html += '<h3 style="font-size:13px;color:#4ade80;margin-bottom:6px;">Todas las órdenes (' + orders.length + ')</h3>';
   if (orders.length === 0) {
     html += '<div class="empty">Sin órdenes registradas aún.</div>';
