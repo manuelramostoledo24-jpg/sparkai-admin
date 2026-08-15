@@ -252,6 +252,7 @@
     <h1 translate="no">SparkAI Licenses</h1>
     <div style="display:flex;gap:8px;">
       <button class="logout-btn" type="button" onclick="openPagosModal()">💰 Pagos</button>
+      <button class="logout-btn" type="button" id="btnZelle" onclick="openZelleModal()">🎁 Zelle</button>
       <button class="logout-btn" type="button" onclick="logout()">Lock</button>
     </div>
   </div>
@@ -330,6 +331,15 @@
     <div id="statsBody" style="max-height:62vh;overflow-y:auto;">Loading...</div>
     <div class="modal-btns">
       <button class="btn-secondary" type="button" onclick="closeStatsModal()">Close</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg hidden" id="zelleModal">
+  <div class="modal" style="max-width:520px;">
+    <h2>🎁 Cobros por Zelle</h2>
+    <div id="zelleBody" style="max-height:70vh;overflow-y:auto;">Loading...</div>
+    <div class="modal-btns">
+      <button class="btn-secondary" type="button" onclick="closeZelleModal()">Close</button>
     </div>
   </div>
 </div>
@@ -904,6 +914,77 @@ function computeListPrice(base) {
   var pct = Number(currentFee.fee_pct) || 0;
   var fixed = Number(currentFee.fee_fixed) || 0;
   return (Number(base) + fixed) / (1 - pct);
+}
+// ===== SOLICITUDES DE COBRO POR ZELLE =====
+//
+// El embajador pide su credito desde la app. Al pedirlo, el saldo YA se le
+// descuenta y queda apartado en la solicitud, asi que aqui solo caben dos
+// finales: pagarle, o devolverle el dinero. Sin esta pantalla las peticiones
+// no se veian en ningun sitio y el embajador se quedaba esperando.
+var zellePayouts = [];
+function openZelleModal() {
+  document.getElementById("zelleModal").classList.remove("hidden");
+  document.getElementById("zelleBody").innerHTML = "Loading...";
+  callAdmin("get_payouts", {})
+  .then(function(resp){
+    zellePayouts = resp.payouts || [];
+    renderZelle(resp.pendiente || 0);
+  })
+  .catch(function(e){
+    if (e.message !== "unauthorized") document.getElementById("zelleBody").innerHTML =
+      '<div style="color:#f87171">No se pudo cargar: ' + escapeHtml(e.message) + '</div>';
+  });
+}
+function closeZelleModal() { document.getElementById("zelleModal").classList.add("hidden"); }
+function renderZelle(pendiente) {
+  var pend = [], resueltas = [];
+  for (var i = 0; i < zellePayouts.length; i++) {
+    if (zellePayouts[i].status === "solicitado") pend.push(zellePayouts[i]);
+    else resueltas.push(zellePayouts[i]);
+  }
+  var h = '<div style="background:#422006;border-radius:10px;padding:12px;margin-bottom:14px;text-align:center;">' +
+          '<div style="color:#fbbf24;font-size:22px;font-weight:700;">$' + Number(pendiente).toFixed(2) + '</div>' +
+          '<div style="color:#a1a1aa;font-size:11px;">pendiente de pagar · ' + pend.length + ' solicitud(es)</div></div>';
+  if (pend.length === 0) {
+    h += '<div style="color:#a1a1aa;font-size:12px;text-align:center;padding:10px;">No hay solicitudes pendientes.</div>';
+  }
+  for (var j = 0; j < pend.length; j++) {
+    var r = pend[j];
+    h += '<div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:11px;margin-bottom:9px;">' +
+         '<div style="color:#e8eaed;font-size:13px;word-break:break-all;">' + escapeHtml(r.email || "") + '</div>' +
+         '<div style="color:#4ade80;font-size:18px;font-weight:700;margin:3px 0;">$' + Number(r.amount_usd || 0).toFixed(2) + '</div>' +
+         '<div style="color:#71717a;font-size:10px;">pedido el ' + fmtDate(r.requested_at) + '</div>' +
+         '<div style="display:flex;gap:8px;margin-top:9px;">' +
+         '<button class="act-btn renew" style="flex:1" onclick="resolverZelle(\'' + r.id + '\',\'pagado\',\'' + escapeAttr(r.email) + '\',' + Number(r.amount_usd || 0) + ')">✅ Ya le pagué</button>' +
+         '<button class="act-btn block" style="flex:1" onclick="resolverZelle(\'' + r.id + '\',\'rechazado\',\'' + escapeAttr(r.email) + '\',' + Number(r.amount_usd || 0) + ')">↩ Devolver saldo</button>' +
+         '</div></div>';
+  }
+  if (resueltas.length > 0) {
+    h += '<div style="color:#71717a;font-size:10px;margin:14px 0 6px;letter-spacing:1px;">HISTORIAL</div>';
+    for (var k = 0; k < resueltas.length && k < 30; k++) {
+      var x = resueltas[k];
+      h += '<div style="display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid #1e293b;">' +
+           '<span style="color:#a1a1aa;word-break:break-all;">' + escapeHtml(x.email || "") + '</span>' +
+           '<span style="color:' + (x.status === "pagado" ? "#4ade80" : "#fbbf24") + ';white-space:nowrap;margin-left:8px;">$' +
+           Number(x.amount_usd || 0).toFixed(2) + ' · ' + escapeHtml(x.status) + '</span></div>';
+    }
+  }
+  document.getElementById("zelleBody").innerHTML = h;
+}
+function resolverZelle(id, resultado, email, monto) {
+  var msg = resultado === "pagado"
+    ? "Confirmas que ya le mandaste $" + Number(monto).toFixed(2) + " por Zelle a:\n\n" + email
+    : "Vas a DEVOLVERLE el saldo de $" + Number(monto).toFixed(2) + " a:\n\n" + email +
+      "\n\nSu crédito vuelve a estar disponible y podrá usarlo para tiempo o volver a pedirlo.";
+  if (!confirm(msg)) return;
+  callAdmin("resolve_payout", { id: id, resultado: resultado, resolvedBy: "panel" })
+  .then(function(resp){
+    if (resp.yaEstaba) { alert("Esa solicitud ya estaba resuelta."); }
+    else if (resultado === "rechazado") { alert("Saldo devuelto: $" + Number(resp.devuelto || monto).toFixed(2)); }
+    else { alert("Marcada como pagada."); }
+    openZelleModal(); loadLicenses();
+  })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("No se pudo: " + e.message); });
 }
 function openPagosModal() {
   document.getElementById("pagosModal").classList.remove("hidden");
