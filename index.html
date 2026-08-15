@@ -304,6 +304,8 @@
       <option value="Venmo">Venmo</option>
       <option value="Other">Other</option>
     </select>
+    <label>⏳ Días de licencia que le vendiste (obligatorio)</label>
+    <input type="number" id="newDias" placeholder="7" min="0" step="0.5" autocomplete="off">
     <input type="text" id="newNotes" placeholder="Notes (optional)">
     <label>🎁 Referido por (email de quien lo refirió) — opcional</label>
     <input type="email" id="newReferredBy" placeholder="referrer@email.com" autocomplete="off">
@@ -1144,6 +1146,7 @@ function viewLogs(email) {
 function closeLogsModal() { document.getElementById("logsModal").classList.add("hidden"); }
 function openCreateModal() {
   document.getElementById("newEmail").value = "";
+  document.getElementById("newDias").value = "";
   document.getElementById("newCode").value = generateCode();
   document.getElementById("newPayment").value = "Cash";
   document.getElementById("newNotes").value = "";
@@ -1163,7 +1166,14 @@ function createLicense() {
   var notes = document.getElementById("newNotes").value.trim();
   var referredBy = document.getElementById("newReferredBy").value.trim().toLowerCase();
   if (!email || email.indexOf("@") < 0) { alert("Invalid email"); return; }
-  var expIso = new Date(Date.now() + WEEK_MS).toISOString();
+  // Los dias ya NO se regalan solos. Antes esta linea ponia siempre 7 dias, y
+  // por eso los clientes nuevos arrancaban con una semana sin haber pagado.
+  // Ahora lo decide Manuel al crearla, que es cuando ya cobro la instalacion.
+  var diasTxt = document.getElementById("newDias").value.trim();
+  if (diasTxt === "") { alert("Pon los días de licencia que le vendiste.\n\nSi va a empezar sin tiempo, escribe 0."); return; }
+  var dias = parseFloat(diasTxt);
+  if (isNaN(dias) || dias < 0) { alert("Número de días inválido"); return; }
+  var expIso = new Date(Date.now() + Math.round(dias * DAY_MS)).toISOString();
   callAdmin("create_license", {
     email: email, code: code, paidAmount: 150,
     paymentMethod: payment, notes: notes || null, referredBy: referredBy || null,
@@ -1172,20 +1182,19 @@ function createLicense() {
   .then(function(){
     var txt = "Email: " + email + "\nCode: " + code;
     if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(txt).catch(function(){}); }
+    // El bono del referidor YA NO se da aqui. Antes esta pantalla llamaba a
+    // apply_referral y le regalaba 1 semana al crear la licencia. Con el sistema
+    // nuevo el bono ($50 + 1 semana) nace cuando Manuel marca "Instalación
+    // pagada". Si se dejaran las dos, el referidor cobraria dos veces.
+    var aviso = "License created!\n\nCopiado al portapapeles:\n\n" + txt;
     if (referredBy && referredBy.indexOf("@") > 0) {
-      callAdmin("apply_referral", { referrerEmail: referredBy, addMs: WEEK_MS })
-      .then(function(rr){
-        if (rr.referrerFound) { alert("✅ Cliente creado + premio!\n\n" + referredBy + " ganó 1 semana gratis."); }
-        else { alert("⚠️ Cliente creado, PERO no se encontró al referido:\n" + referredBy + "\n\nRevisa el email. No se dio la semana gratis."); }
-        closeCreateModal(); loadLicenses();
-      })
-      .catch(function(e){ alert("⚠️ Cliente creado, pero falló dar la semana: " + e.message); closeCreateModal(); loadLicenses(); });
-    } else {
-      alert("License created!\n\nCopiado al portapapeles:\n\n" + txt);
-      closeCreateModal(); loadLicenses();
+      aviso += "\n\n🎁 Referido por: " + referredBy +
+               "\nSu bono se le dará cuando marques 🔧 Instalación pagada.";
     }
+    alert(aviso);
+    closeCreateModal(); loadLicenses();
   })
-  .catch(function(e){ showError("Create failed: " + e.message); });
+  .catch(function(e){ if (e.message !== "unauthorized") showError("Create failed: " + e.message); });
 }
 function escapeHtml(s) {
   return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
