@@ -134,6 +134,8 @@
   .lic-meta span.dev { background: #0f172a; color: #64748b; font-family: "Courier New", monospace; }
   .lic-meta span.amb { background: #064e3b; color: #4ade80; font-weight: 700; }
   .lic-meta span.ambno { background: #422006; color: #fbbf24; font-weight: 700; }
+  .lic-meta span.inst { background: #064e3b; color: #4ade80; font-weight: 700; }
+  .lic-meta span.instno { background: #4c1d95; color: #d8b4fe; font-weight: 700; }
   .lic-meta span.idle { background: #431407; color: #fb923c; font-weight: 700; }
   .lic-notes {
     font-size: 11px; color: #cbd5e1; background: #0f172a; border-left: 3px solid #475569;
@@ -653,6 +655,16 @@ function renderCard(L, now) {
       ? '<span class="amb">🏅 Premio pagado</span>'
       : '<span class="ambno">🏅 Premio SIN pagar</span>';
   }
+  // Instalacion: el cliente le paga a Manuel por fuera de la app. Marcarla es
+  // lo que dispara el bono del referidor, asi que tiene que verse de un vistazo
+  // quien la tiene pendiente.
+  var instHtml = L.installation_paid
+    ? '<span class="inst">🔧 Instalación $' + (L.installation_amount || 0) + '</span>'
+    : '<span class="instno">🔧 Instalación SIN cobrar</span>';
+  // Credito de referidos acumulado por este cliente.
+  var credHtml = (Number(L.referral_credit_usd || 0) > 0)
+    ? '<span class="ref">💵 Crédito $' + Number(L.referral_credit_usd) + '</span>'
+    : '';
   // Aviso de inactividad: pago, pero hace dias que no da señal.
   // Sin last_seen, idleMsOf devuelve Infinity: hay que decir "nunca", no un numero.
   var idleHtml = "";
@@ -682,6 +694,9 @@ function renderCard(L, now) {
   if (L.device_id) {
     actions += '<button class="act-btn reset" onclick="resetDevice(\'' + L.id + '\')">Reset Device</button>';
   }
+  if (!L.installation_paid) {
+    actions += '<button class="act-btn instpaid" onclick="markInstallationPaid(\'' + L.id + '\',\'' + escapeAttr(L.email) + '\')">🔧 Instalación pagada</button>';
+  }
   actions += '<button class="act-btn stats" onclick="viewStats(\'' + escapeAttr(L.email) + '\')">📊 Stats</button>';
   actions += '<button class="act-btn logs" onclick="viewLogs(\'' + escapeAttr(L.email) + '\')">View Logs</button>';
   actions += '<button class="act-btn delete" onclick="deleteLicense(\'' + L.id + '\',\'' + escapeAttr(L.email) + '\')">Delete</button>';
@@ -703,7 +718,7 @@ function renderCard(L, now) {
         devIdHtml +
         '<span>Created: ' + created + '</span>' +
         actHtml + expHtml +
-        refHtml + refByHtml + ambHtml +
+        refHtml + refByHtml + ambHtml + instHtml + credHtml +
       '</div>' +
       '<div class="lic-actions">' + actions + '</div>' +
     '</div>'
@@ -1071,6 +1086,39 @@ function addTime(id) {
   callAdmin("add_time", { id: id, addMs: addMs })
   .then(function(){ loadLicenses(); })
   .catch(function(e){ if (e.message !== "unauthorized") showError("Add time failed: " + e.message); });
+}
+// Marca que el cliente ya pago la instalacion. Este boton es el que dispara el
+// bono del referidor: el backend registra el dinero en payments y, si esta
+// licencia tiene referidor, le acredita sus $50 + 1 semana. Una sola vez por
+// cliente, lo impide el indice UNIQUE de referrals.
+function markInstallationPaid(id, email) {
+  var v = prompt("¿Cuánto cobraste por la instalación de " + email + "?\n\nEscribe solo el número (ej. 150)");
+  if (v === null) return;
+  var amount = parseFloat(String(v).replace(/[^0-9.]/g, ""));
+  if (isNaN(amount) || amount < 0) { alert("Número inválido"); return; }
+  var metodo = prompt("¿Cómo te pagó?\n\nzelle / efectivo / cashapp / otro", "zelle");
+  if (metodo === null) return;
+  if (!confirm("Confirmar:\n\n" + email + "\nInstalación cobrada: $" + amount + " (" + metodo + ")\n\nSi este cliente tiene referidor, se le acreditará su bono AHORA.\nEsto no se puede deshacer desde el panel.")) return;
+  callAdmin("mark_installation_paid", { id: id, amount: amount, method: metodo })
+  .then(function(resp){
+    var b = resp.bono || {};
+    if (b.pagado) {
+      alert("✅ Instalación registrada.\n\n🎁 Bono acreditado a " + b.referidor + ":\n$" + b.usd + " + " + b.semanas + " semana(s)");
+    } else if (resp.yaEstaba) {
+      alert("Esta instalación ya estaba marcada. No se registró nada nuevo.");
+    } else {
+      var motivos = {
+        sin_referidor: "este cliente no vino por referido",
+        autoreferido: "el referidor es el mismo cliente",
+        referidor_no_existe: "el correo del referidor no existe en la base",
+        ya_pagado: "el bono de este referido ya se había pagado",
+        programa_inactivo: "el programa de referidos está apagado"
+      };
+      alert("✅ Instalación registrada.\n\nSin bono: " + (motivos[b.motivo] || b.motivo || "sin referidor"));
+    }
+    loadLicenses();
+  })
+  .catch(function(e){ if (e.message !== "unauthorized") showError("No se pudo marcar: " + e.message); });
 }
 function viewLogs(email) {
   document.getElementById("logsModal").classList.remove("hidden");
